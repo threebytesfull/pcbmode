@@ -99,6 +99,25 @@
       "ZEN": "Zener diode"
     }
   },
+  "gerber": {
+    "g2x_map": {
+      "sheets": {
+        "conductor": "Copper",
+        "silkscreen": "Legend",
+        "legend": "Legend",
+        "soldermask": "Soldermask",
+        "outline": "Profile",
+        "solderpaste": "Paste",
+        "documentation": "Documentation"
+      },
+      "layers": {
+        "top": "Top",
+        "bot": "Bot",
+        "bottom": "Bot",
+        "internal": "Inr"
+      }
+    }
+  },
   "manufacturers":
   {
     "default":
