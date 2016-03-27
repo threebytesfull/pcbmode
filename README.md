@@ -11,11 +11,11 @@ You'll need:
 * [lxml](http://lxml.de/)
 * [Inkscape](http://inkscape.org)
 
-PCBmodE is developed and tested under Linux, so it might or might not work under other OSs. (It'd be helpful to know success or failure of attempts!)
+PCBmodE is developed and tested under Linux, so it might or might not work under other OSs.
 
 ### Resources
 [Documentation](http://pcbmode.readthedocs.org)  
-[Boards repository](https://github.com/boldport/PCBmodE-boards)
+[Board examples](https://github.com/boldport/)
 
 ### The name
 The 'mod' in PCBmodE has a double meaning. The first is short for 'modern' (in contrast to tired old EDA tools). The second is a play on the familiar 'modifications' or 'mods' done to imperfect PCBs. Call it 'PCB mode' or 'PCB mod E', whichever you prefer. 
