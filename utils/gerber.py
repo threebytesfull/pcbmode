@@ -2,6 +2,8 @@
 
 import os
 import re
+import datetime
+import pytz
 from lxml import etree as et
 import pyparsing as pyp
 
@@ -49,8 +51,7 @@ def gerberise(manufacturer='default'):
     filename_info = config.cfg['manufacturers'][manufacturer]['filenames']['gerbers']
 
     # Process Gerbers for PCB layers and sheets
-    #for pcb_layer in utils.getSurfaceLayers():
-    for pcb_layer in config.stk['layer-names']:
+    for layer_num, pcb_layer in enumerate(config.stk['layer-names']):
 
         # Get the SVG layer corresponding to the PCB layer
         svg_layer = svg_in.find("//svg:g[@pcbmode:pcb-layer='%s']" % (pcb_layer),
@@ -61,7 +62,7 @@ def gerberise(manufacturer='default'):
                                        namespaces=ns)
 
         sheets = ['conductor', 'soldermask', 'solderpaste', 'silkscreen']
-#        sheets = ['conductor']
+
         for sheet in sheets:
             # Get the SVG layer corresponding to the 'sheet'
             sheet_layer = svg_layer.find(".//svg:g[@pcbmode:sheet='%s']" % (sheet),
@@ -74,12 +75,15 @@ def gerberise(manufacturer='default'):
 
             if sheet_layer != None:
                 # Create a Gerber object
-                gerber = Gerber(sheet_layer,
-                                mask_paths_to_pass,
-                                decimals,
-                                digits,
-                                steps,
-                                length)
+                gerber = Gerber(layer=pcb_layer,
+                                num=layer_num+1,
+                                sheet=sheet,
+                                svg=sheet_layer,
+                                mask_paths=mask_paths_to_pass,
+                                decimals=decimals,
+                                digits=digits,
+                                steps=steps,
+                                length=length)
      
                 add = '_%s_%s.%s' % (pcb_layer, sheet,
                                      filename_info[pcb_layer.split('-')[0]][sheet].get('ext') or 'ger')
@@ -98,12 +102,15 @@ def gerberise(manufacturer='default'):
                                   namespaces=ns)            
 
         # Create a Gerber object
-        gerber = Gerber(sheet_layer,
-                        [],
-                        decimals,
-                        digits,
-                        steps,
-                        length)
+        gerber = Gerber(layer=None,
+                        num=None,
+                        sheet=sheet,
+                        svg=sheet_layer,
+                        mask_paths=[],
+                        decimals=decimals,
+                        digits=digits,
+                        steps=steps,
+                        length=length)
 
         add = '_%s.%s' % (sheet,
                           filename_info['other'][sheet].get('ext') or 'ger')
@@ -114,7 +121,7 @@ def gerberise(manufacturer='default'):
                 f.write(line)
 
 
-    return ['bullshit']
+    return ['']
 
 
 
@@ -127,6 +134,9 @@ class Gerber():
     """
 
     def __init__(self,
+                 layer,
+                 num,
+                 sheet,
                  svg,
                  mask_paths, 
                  decimals,
@@ -139,6 +149,9 @@ class Gerber():
         self._ns = {'pcbmode':config.cfg['ns']['pcbmode'],
                     'svg':config.cfg['ns']['svg']} 
 
+        self._layer_name = layer
+        self._layer_number = num
+        self._sheet_name = sheet
         self._svg = svg
         self._mask_paths = mask_paths
         self._decimals = decimals
@@ -151,9 +164,9 @@ class Gerber():
         
         # Gerber apertures are defined at the begining of the file and
         # then refered to by number. 1--10 are reserved and cannot be
-        # used, so wer start the design's apersute number at 20,
-        # leaving 10 to define fixed apertures for closed shapesm
-        # flashes, wtc.lets us have
+        # used, so we start the design's apersute number at 20,
+        # leaving 10 to define fixed apertures for closed shapes,
+        # flashes, etc.
         self._aperture_num = 20
 
         self._closed_shape_aperture_num = 10
@@ -163,6 +176,8 @@ class Gerber():
         self._apertures = {}
 
         self._paths = self._getPaths()
+
+        self._g2x_map = config.cfg['gerber']['g2x_map']
 
         for path in self._paths:
             tmp = {}
@@ -491,14 +506,54 @@ class Gerber():
         pa.append("G04                                                      *\n")
         pa.append("G04   http://pcbmode.com                                 *\n")
         pa.append("G04                                                      *\n")
-        pa.append("G04 Also visit                                           *\n")
+        pa.append("G04 It is maintained by Boldport                         *\n")
         pa.append("G04                                                      *\n")
         pa.append("G04   http://boldport.com                                *\n")
-        pa.append("G04                                                      *\n")
-        pa.append("G04 and follow @boldport / @pcbmode for updates!         *\n")
+        pa.append("G04   @boldport @pcbmode                                 *\n")
         pa.append("G04                                                      *\n")
         pa.append("\n")
         # version %s on %s GMT; *\n" % (config.cfg['version'], datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")))
+        pa.append("\n")
+
+        # Gerber2X attributes
+        if self._layer_name != None:
+            mark = self._layer_name.split('-')
+            layer_name = mark[0]
+
+        if self._sheet_name == 'conductor':
+            pa += self._getParamCommand("TF.FileFunction,%s,L%d,%s" % (self._g2x_map['sheets'][self._sheet_name],
+                                                                     self._layer_number,
+                                                                     self._g2x_map['layers'][layer_name]),
+                                        "Gerber2X attributes")
+        elif self._sheet_name == 'outline':
+            pa += self._getParamCommand("TF.FileFunction,%s,NP" % (self._g2x_map['sheets'][self._sheet_name]),
+                                        "Gerber2X attributes")
+
+        elif self._sheet_name == 'documentation':
+            pa += self._getParamCommand("TF.FileFunction,Other,%s" % (self._g2x_map['sheets'][self._sheet_name]),
+                                        "Gerber2X attributes")
+
+        else:
+            pa += self._getParamCommand("TF.FileFunction,%s,%s" % (self._g2x_map['sheets'][self._sheet_name],
+                                                                   self._g2x_map['layers'][layer_name]),
+                                        "Gerber2X attributes")
+        
+        # Soldermask and solderpase represent absence of material, and
+        # therefore should be defined as 'negative'
+        if self._sheet_name == 'soldermask' or self._sheet_name == 'solderpaste':
+            layer_polarity = 'Negative'
+        else:
+            layer_polarity = 'Positive'
+        pa += self._getParamCommand("TF.FilePolarity,%s" % (layer_polarity))
+
+        # PCBmodE FTW!!!!!!1!
+        pa += self._getParamCommand("TF.GenerationSoftware,%s" % ('PCBmodE'))
+
+        # Time, ISO 8601
+        # TODO: According to the spec this needs to have the timezone as well... 
+        pa += self._getParamCommand("TF.CreationDate,%s" % (datetime.datetime.now(pytz.utc).isoformat()))
+
+        pa.append("\n")
 
         # Define figure format
         pa += self._getParamCommand("FSLAX%d%dY%d%d" % (self._digits,
