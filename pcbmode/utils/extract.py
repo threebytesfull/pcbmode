@@ -102,7 +102,7 @@ def extractComponents(svg_in):
                             config.cfg['name'] + '.json')
     try:
         with open(filename, 'wb') as f:
-            f.write(json.dumps(config.brd, sort_keys=True, indent=2))
+            f.write(json.dumps(config.brd, sort_keys=True, indent=2).encode())
     except:
         msg.error("Cannot save file %s" % filename)
 
@@ -183,7 +183,7 @@ def extractRefdefs(svg_in):
                             config.cfg['name'] + '.json')
     try:
         with open(filename, 'wb') as f:
-            f.write(json.dumps(config.brd, sort_keys=True, indent=2))
+            f.write(json.dumps(config.brd, sort_keys=True, indent=2).encode())
     except:
         msg.error("Cannot save file %s" % filename)
 
@@ -374,7 +374,7 @@ def extractRouting(svg_in):
     # Save extracted routing into routing file
     try:
         with open(output_file, 'wb') as f:
-            f.write(json.dumps(routing_dict, sort_keys=True, indent=2))
+            f.write(json.dumps(routing_dict, sort_keys=True, indent=2).encode())
     except:
         msg.error("Cannot save file %s" % output_file)
 
@@ -434,6 +434,6 @@ def extractDocs(svg_in):
                             config.cfg['name'] + '.json')
     try:
         with open(filename, 'wb') as f:
-            f.write(json.dumps(config.brd, sort_keys=True, indent=2))
+            f.write(json.dumps(config.brd, sort_keys=True, indent=2).encode())
     except:
         msg.error("Cannot save file %s" % filename)
