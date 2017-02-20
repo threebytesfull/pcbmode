@@ -92,7 +92,7 @@ def gerberise(manufacturer='default'):
 
                 with open(filename, "wb") as f:
                     for line in gerber.getGerber():
-                        f.write(line)
+                        f.write(line.encode())
 
 
     # Process module sheets
@@ -116,7 +116,7 @@ def gerberise(manufacturer='default'):
 
         with open(filename, "wb") as f:
             for line in gerber.getGerber(False):
-                f.write(line)
+                f.write(line.encode())
 
 
     return ['bullshit']

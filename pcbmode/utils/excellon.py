@@ -42,7 +42,7 @@ def makeExcellon(manufacturer='default'):
 
     with open(filename, "wb") as f:
         for line in excellon.getExcellon():
-            f.write(line)
+            f.write(line.encode())
 
 
 
