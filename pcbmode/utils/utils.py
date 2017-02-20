@@ -131,12 +131,12 @@ def makePngs():
 
     command = ['inkscape',
                '--without-gui',
-               '--file=%s' % os.path.join(config.cfg['base-dir'],
-                                          config.cfg['locations']['build'],
-                                          config.cfg['name'] + '.svg'),
-               '--export-png=%s' % os.path.join(images_path, config.cfg['name'] + '_rev_' +
-                                                config.brd['config']['rev'] +
-                                                '.png'),
+               '--file=%s' % os.path.abspath(os.path.join(config.cfg['base-dir'],
+                                                          config.cfg['locations']['build'],
+                                                          config.cfg['name'] + '.svg')),
+               '--export-png=%s' % os.path.abspath(os.path.join(images_path, config.cfg['name'] + '_rev_' +
+                                                                config.brd['config']['rev'] +
+                                                                '.png')),
                '--export-dpi=%s' % str(png_dpi),
                '--export-area-drawing',
                '--export-background=#FFFFFF']
