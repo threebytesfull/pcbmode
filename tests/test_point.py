@@ -211,5 +211,5 @@ class TestPoint(unittest.TestCase):
         self.p2.mult(3.7)
         self.assertEqual(self.p2, Point(x*3.7, y*3.7), 'should multiply point by positive floating point')
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
     unittest.main()
