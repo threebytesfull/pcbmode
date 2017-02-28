@@ -13,6 +13,7 @@ setup(
     packages = find_packages(exclude=['tests', 'docs']),
     use_scm_version=True,
     setup_requires=['setuptools_scm'],
+    test_suite='tests',
 
     install_requires = ['lxml', 'pyparsing'],
 
