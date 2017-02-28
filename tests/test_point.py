@@ -123,6 +123,65 @@ class TestPoint(unittest.TestCase):
                 self.assertAlmostEqual(p_temp.x, x, msg='should get correct x at 360 degrees clockwise rotation')
                 self.assertAlmostEqual(p_temp.y, y, msg='should get correct y at 360 degrees clockwise rotation')
 
+    def test_rotate_point_clockwise_around_itself(self):
+        for p in (self.p0, self.p1, self.p2):
+            with self.subTest(p=p):
+                x, y = p.x, p.y
+                p_temp = Point(x, y)
+                p_temp.rotate(90, Point(x, y))
+                self.assertAlmostEqual(p_temp.x, x, msg='should get correct x at 90 degrees clockwise rotation')
+                self.assertAlmostEqual(p_temp.y, y, msg='should get correct y at 90 degrees clockwise rotation')
+                p_temp.rotate(90, Point(x, y))
+                self.assertAlmostEqual(p_temp.x, x, msg='should get correct x at 90 degrees clockwise rotation')
+                self.assertAlmostEqual(p_temp.y, y, msg='should get correct y at 90 degrees clockwise rotation')
+                p_temp.rotate(90, Point(x, y))
+                self.assertAlmostEqual(p_temp.x, x, msg='should get correct x at 90 degrees clockwise rotation')
+                self.assertAlmostEqual(p_temp.y, y, msg='should get correct y at 90 degrees clockwise rotation')
+                p_temp.rotate(90, Point(x, y))
+                self.assertAlmostEqual(p_temp.x, x, msg='should get correct x at 90 degrees clockwise rotation')
+                self.assertAlmostEqual(p_temp.y, y, msg='should get correct y at 90 degrees clockwise rotation')
+
+    def test_rotate_point_counterclockwise_around_itself(self):
+        for p in (self.p0, self.p1, self.p2):
+            with self.subTest(p=p):
+                x, y = p.x, p.y
+                p_temp = Point(x, y)
+                p_temp.rotate(-90, Point(x, y))
+                self.assertAlmostEqual(p_temp.x, x, msg='should get correct x at 90 degrees counterclockwise rotation')
+                self.assertAlmostEqual(p_temp.y, y, msg='should get correct y at 90 degrees counterclockwise rotation')
+                p_temp.rotate(-90, Point(x, y))
+                self.assertAlmostEqual(p_temp.x, x, msg='should get correct x at 90 degrees counterclockwise rotation')
+                self.assertAlmostEqual(p_temp.y, y, msg='should get correct y at 90 degrees counterclockwise rotation')
+                p_temp.rotate(-90, Point(x, y))
+                self.assertAlmostEqual(p_temp.x, x, msg='should get correct x at 90 degrees counterclockwise rotation')
+                self.assertAlmostEqual(p_temp.y, y, msg='should get correct y at 90 degrees counterclockwise rotation')
+                p_temp.rotate(-90, Point(x, y))
+                self.assertAlmostEqual(p_temp.x, x, msg='should get correct x at 90 degrees counterclockwise rotation')
+                self.assertAlmostEqual(p_temp.y, y, msg='should get correct y at 90 degrees counterclockwise rotation')
+
+    def test_reflect_point_across_x_axis(self):
+        for p in (self.p0, self.p1, self.p2):
+            with self.subTest(p=p):
+                x, y = p.x, p.y
+                p_temp = Point(x, y)
+                p_temp.rotate(180, Point(x, 0))
+                self.assertAlmostEqual(p_temp.x, x, msg='should get correct x reflected across x axis')
+                self.assertAlmostEqual(p_temp.y, -y, msg='should get correct y reflected across x axis')
+                p_temp.rotate(180, Point(x, 0))
+                self.assertAlmostEqual(p_temp.x, x, msg='should get correct x reflected across x axis')
+                self.assertAlmostEqual(p_temp.y, y, msg='should get correct y reflected across x axis')
+
+    def test_reflect_point_across_y_axis(self):
+        for p in (self.p0, self.p1, self.p2):
+            with self.subTest(p=p):
+                x, y = p.x, p.y
+                p_temp = Point(x, y)
+                p_temp.rotate(180, Point(0, y))
+                self.assertAlmostEqual(p_temp.x, -x, msg='should get correct x reflected across y axis')
+                self.assertAlmostEqual(p_temp.y, y, msg='should get correct y reflected across y axis')
+                p_temp.rotate(180, Point(0, y))
+                self.assertAlmostEqual(p_temp.x, x, msg='should get correct x reflected across y axis')
+                self.assertAlmostEqual(p_temp.y, y, msg='should get correct y reflected across y axis')
 
     # Tests for round
     def test_round_to_two_decimal_places(self):
