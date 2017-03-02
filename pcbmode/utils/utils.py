@@ -360,42 +360,6 @@ def checkForPoursInLayer(layer):
 
 
 
-def interpret_svg_matrix(matrix_data):
-    """
-    Takes an array for six SVG parameters and returns angle, scale
-    and placement coordinate
-
-    This SO answer was helpful here:
-      http://stackoverflow.com/questions/15546273/svg-matrix-to-rotation-degrees
-    """
-
-    # apply float() to all elements, just in case
-    matrix_data = [ float(x) for x in matrix_data ]
-
-    coord = Point(matrix_data[4], -matrix_data[5])
-    if matrix_data[0] == 0:
-        angle = math.degrees(0)
-    else:
-        angle = math.atan(matrix_data[2] / matrix_data[0])
-
-    scale = Point(math.fabs(matrix_data[0] / math.cos(angle)),
-                  math.fabs(matrix_data[3] / math.cos(angle)))
-
-    # convert angle to degrees
-    angle = math.degrees(angle)
-
-    # Inkscape rotates anti-clockwise, PCBmodE "thinks" clockwise. The following
-    # adjusts these two views, although at some point we'd
-    # need to have the same view, or make it configurable
-    angle = -angle
-
-    return coord, angle, scale
-
-
-
-
-
-
 def parse_refdef(refdef):
     """
     Parses a reference designator and returns the refdef categoty,
