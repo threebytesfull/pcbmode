@@ -177,8 +177,30 @@ class TestUtils(TestCase):
         pass
 
     # create_dir tests
-    def test_create_dir(self):
-        pass
+    @patch('os.makedirs')
+    def test_create_dir_not_already_present(self, fake_makedirs):
+        utils.create_dir('dummy')
+        fake_makedirs.assert_called_with('dummy')
+
+    @patch('os.makedirs')
+    @patch('os.path.isdir')
+    def test_create_dir_already_present(self, fake_isdir, fake_makedirs):
+        fake_makedirs.side_effect = FileExistsError()
+        fake_isdir.return_value = True
+        utils.create_dir('dummy')
+        fake_makedirs.assert_called_with('dummy')
+        fake_isdir.assert_called_with('dummy')
+
+    @patch('os.makedirs')
+    @patch('os.path.isdir')
+    @patch('builtins.print')
+    def test_create_dir_failure(self, fake_print, fake_isdir, fake_makedirs):
+        fake_makedirs.side_effect = FileExistsError()
+        fake_isdir.return_value = False
+        with self.assertRaises(FileExistsError):
+            utils.create_dir('dummy')
+        fake_makedirs.assert_called_with('dummy')
+        fake_isdir.assert_called_with('dummy')
 
     # add_dict_values tests
     def test_add_dict_values(self):
@@ -195,13 +217,33 @@ class TestUtils(TestCase):
     def test_checkForPoursInLayer(self):
         pass
 
-    # interpret_svg_matrix tests
-    def test_interpret_svg_matrix(self):
-        pass
+    # parserefdef tests
+    def test_parse_invalid_refdef(self):
+        test_cases = [
+            '',
+            'NotAGoodRefDef',
+            '99',
+            'X',
+            '1R',
+        ]
+        for refdef in test_cases:
+            with self.subTest(refdef=refdef):
+                self.assertEqual(utils.parse_refdef(refdef), (None, None, None), 'should not parse invalid refdef')
 
-    # parseRefDef tests
-    def test_parseRefDef(self):
-        pass
+    def test_parse_valid_refdef(self):
+        test_cases = [
+            ('R1', ('R', 1, None)),
+            ('CON2', ('CON', 2, None)),
+            ('J1234', ('J', 1234, None)),
+            ('IC1-A', ('IC', 1, '-A')),
+            ('U3 B', ('U', 3, ' B')),
+            ('Unlikely1', ('Unlikely', 1, None)),
+            ('Bad[data1', ('Bad[data', 1, None)), # FIXME: bug? A-z should be A-Z
+            ('Bug?..%%1', ('Bug?..%%', 1, None)), # FIXME: bug? \D in category
+        ]
+        for refdef, expected_output in test_cases:
+            with self.subTest(refdef=refdef):
+                self.assertEqual(utils.parse_refdef(refdef), expected_output, 'should parse valid refdef')
 
     # renumberRefDefs tests
     def test_renumberRefDefs(self):
@@ -217,20 +259,108 @@ class TestUtils(TestCase):
 
     # digest tests
     def test_digest(self):
-        pass
+        input_string = 'PCBmodE'
+        output_hash = '2dc7e7def877f609c8532c01a2a357ae'
+        for num_chars in range(1, 33):
+            with self.subTest(num_chars=num_chars):
+                with patch('tests.test_utils.utils.config') as config:
+                    config.cfg = {'digest-digits': num_chars}
+                    output = utils.digest(input_string)
+                    # FIXME: this is probably a bug - the length is always one less than the configured digest-digits
+                    self.assertEqual(output, output_hash[:num_chars-1], 'should get correct {} character digest hash'.format(num_chars))
 
     # getStyleAttrib tests
     def test_getStyleAttrib(self):
-        pass
+        test_cases = [
+            ('one:1; two:2',
+                {
+                    'one': '1',
+                    'two': '2',
+                    'three': None,
+                }
+            ),
+            ('  fill:#000;stroke:#000; stroke-linejoin: round;stroke-width:0.9;stroke-linecap:round;',
+                {
+                    'fill': '#000',
+                    'stroke': '#000',
+                    'stroke-linejoin': 'round',
+                    'stroke-width': '0.9',
+                    'stroke-linecap': 'round',
+                }
+            ),
+        ]
+        for input_string, expected_values in test_cases:
+            with self.subTest(input_string=input_string):
+                for attrib, expected_value in expected_values.items():
+                    with self.subTest(attrib=attrib):
+                        value = utils.getStyleAttrib(input_string, attrib)
+                        self.assertEqual(value, expected_value, 'should get correct {} attribute from {}'.format(attrib, input_string))
 
     # niceFloat tests
     def test_niceFloat(self):
-        pass
+        test_cases = [
+            (1.0, 1.0),
+            (1.01, 1.01),
+            (1.001, 1.001),
+            (1.0001, 1.0001),
+            (1.00001, 1.00001),
+            (1.000001, 1.000001),
+            (1.0000001, 1.0),
+            (-1.0, -1.0),
+            (-1.01, -1.01),
+            (-1.001, -1.001),
+            (-1.0001, -1.0001),
+            (-1.00001, -1.00001),
+            (-1.000001, -1.000001),
+            (-1.0000001, -1.0),
+        ]
+        for input_num, expected_output in test_cases:
+            with self.subTest(input_num=input_num):
+                output = utils.niceFloat(input_num)
+                self.assertEqual(output, expected_output, 'should format {} correctly'.format(input_num))
 
     # parseTransform tests
-    def test_parseTransform(self):
-        pass
+    def test_parse_bad_transform(self):
+        with self.assertRaises(Exception):
+            with patch('tests.test_utils.utils.msg.error') as e:
+                e.side_effect = Exception()
+                utils.parseTransform('unknown(99)')
+
+    def test_parse_good_transform(self):
+        test_cases = [
+            (None, {'type':'translate', 'location':Point()}),
+            ('translate(0,0)', {'type':'translate', 'location':Point()}),
+            (' translate( 0.5, +70)', {'type':'translate', 'location':Point(0.5,70)}),
+            ('translate (-30,1.5e3 )', {'type':'translate', 'location':Point(-30,1.5e3)}),
+            ('translate(+1.06e-3,0.9) ', {'type':'translate', 'location':Point(1.06e-3,0.9)}),
+            ('matrix(0,1,-1,0,0,0)', {'type':'matrix', 'location':Point(0,0), 'rotate':0, 'scale':1}),
+            ('  matrix(0.4,0,0,0.4,4,0)', {'type':'matrix', 'location':Point(4,0), 'rotate':0, 'scale':0.4}),
+            ('matrix(0.8,0,0,0.8,10,0) ', {'type':'matrix', 'location':Point(10, 0), 'rotate':0, 'scale':0.8}),
+            ('matrix(0.28222222,0,0,0.28222224,-48.3,-8.3146356)', {'type':'matrix', 'location':Point(-48.3,-8.3146356), 'rotate':0, 'scale':0.28222224}),
+            ('matrix(-1.1860592,0,0,1.1860592,-88.663335,-57.031569)', {'type':'matrix', 'location':Point(-88.663335,-57.031569), 'rotate':0, 'scale':1.1860592}),
+            ('matrix(0.86602540,0.5,-0.5,0.86602540,5,3.5)', {'type':'matrix', 'location':Point(5,3.5), 'rotate':30.0, 'scale':1}), # 30deg ccw - shouldn't this be -30 in pcbmode?
+        ]
+        for transform, expected_output in test_cases:
+            with self.subTest(transform=transform):
+                data = utils.parseTransform(transform)
+                for key,val in expected_output.items():
+                    with self.subTest(key=key, val=val):
+                        self.assertAlmostEqual(data.get(key), val, msg='should get correct {} from transform {}'.format(key, transform), delta=1e-6)
 
     # parseSvgMatrix tests
     def test_parseSvgMatrix(self):
-        pass
+        test_cases = [
+            ('matrix(0,1,-1,0,0,0)', (Point(0,0), 0, 1)),
+            ('  matrix(0.4,0,0,0.4,4,0)', (Point(4,0), 0, 0.4)),
+            ('matrix(0.8,0,0,0.8,10,0) ', (Point(10, 0), 0, 0.8)),
+            ('matrix(0.28222222,0,0,0.28222224,-48.3,-8.3146356)', (Point(-48.3,-8.3146356), 0, 0.28222224)),
+            ('matrix(-1.1860592,0,0,1.1860592,-88.663335,-57.031569)', (Point(-88.663335,-57.031569), 0, 1.1860592)),
+            ('matrix(0.86602540,0.5,-0.5,0.86602540,5,3.5)', (Point(5,3.5), 30.0, 1)), # 30deg ccw - shouldn't this be -30 in pcbmode?
+        ]
+        for matrix, expected_output in test_cases:
+            with self.subTest(matrix=matrix):
+                coord, angle, scale = utils.parseSvgMatrix(matrix)
+                self.assertAlmostEqual(coord.x, expected_output[0].x, msg='should get correct x coord from SVG matrix')
+                self.assertAlmostEqual(coord.y, expected_output[0].y, msg='should get correct y coord from SVG matrix')
+                self.assertAlmostEqual(angle, expected_output[1], msg='should get correct angle from SVG matrix', delta=1e-6)
+                self.assertAlmostEqual(scale, expected_output[2], msg='should get correct scale from SVG matrix')
