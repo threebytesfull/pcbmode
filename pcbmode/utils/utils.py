@@ -607,7 +607,6 @@ def parseTransform(transform):
         data['location'] = Point()
     elif 'translate' in transform.lower():
         regex = r".*?translate\s?\(\s?(?P<x>[+-]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\s?[\s,]\s?(?P<y>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\s?\).*"
-#       regex = r".*?translate\s?\(\s?(?P<x>-?[0-9]*\.?[0-9]+)\s?[\s,]\s?(?P<y>-?[0-9]*\.?[0-9]+\s?)\s?\).*"
         coord = re.match(regex, transform)
         data['type'] = 'translate'
         x = coord.group('x')
@@ -643,16 +642,14 @@ def parseSvgMatrix(matrix):
 
     coord = Point(matrix[4], matrix[5])
     if matrix[0] == 0:
-        angle = math.degrees(0)
+        angle = 0
     else:
         angle = math.atan(matrix[2] / matrix[0])
 
-    #scale = Point(math.fabs(matrix[0] / math.cos(angle)),
-    #              math.fabs(matrix[3] / math.cos(angle)))
-    scale_x = math.sqrt(matrix[0]*matrix[0] + matrix[1]*matrix[1]),
-    scale_y = math.sqrt(matrix[2]*matrix[2] + matrix[3]*matrix[3]),
+    scale_x = math.hypot(matrix[0], matrix[1])
+    scale_y = math.hypot(matrix[2], matrix[3])
 
-    scale = max(scale_x, scale_y)[0]
+    scale = max(scale_x, scale_y)
 
     # convert angle to degrees
     angle = math.degrees(angle)
