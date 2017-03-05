@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch, mock_open
 
 from pcbmode.utils import utils
 from pcbmode.utils.point import Point
+from pcbmode.config import Config
 
 class TestUtils(TestCase):
     """Test utils class"""
@@ -263,11 +264,11 @@ class TestUtils(TestCase):
         output_hash = '2dc7e7def877f609c8532c01a2a357ae'
         for num_chars in range(1, 33):
             with self.subTest(num_chars=num_chars):
-                with patch('tests.test_utils.utils.config') as config:
-                    config.cfg = {'digest-digits': num_chars}
-                    output = utils.digest(input_string)
-                    # FIXME: this is probably a bug - the length is always one less than the configured digest-digits
-                    self.assertEqual(output, output_hash[:num_chars-1], 'should get correct {} character digest hash'.format(num_chars))
+                config = Config()
+                config.cfg['digest-digits'] = num_chars
+                output = utils.digest(input_string)
+                # FIXME: this is probably a bug - the length is always one less than the configured digest-digits
+                self.assertEqual(output, output_hash[:num_chars-1], 'should get correct {} character digest hash'.format(num_chars))
 
     # getStyleAttrib tests
     def test_getStyleAttrib(self):
