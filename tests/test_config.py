@@ -35,6 +35,10 @@ class TestConfig(unittest.TestCase):
         c3 = Config(clean=True)
         with self.assertRaises(KeyError, msg='config object should not reuse config if clean is set'):
             val = c3.tmp['test']
+        c4 = Config(clean=True, defaults={'tmp':{'fish': 'salmon'}})
+        self.assertEqual(c4.tmp['fish'], 'salmon', 'config object should clean with defaults if supplied')
+        c5 = Config()
+        self.assertEqual(c5.tmp['fish'], 'salmon', 'config object should retain defaults from earlier instance')
 
     def test_config_get_with_no_top_level_key(self):
         c = Config()
