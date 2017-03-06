@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import patch
 
+import pkg_resources
+
 import pcbmode.config
 from pcbmode.config import Config
 
@@ -81,3 +83,25 @@ class TestConfig(unittest.TestCase):
             self.assertEqual(c.get(top, 'food', 0, 'fruit'), 'apple', 'should get expected value from first item in array')
             self.assertEqual(c.get(top, 'food', 1, 'fruit'), 'banana', 'should get expected value from second item in array')
             self.assertEqual(c.get(top, 'food', 2, 'fruit'), None, 'should get None from nonexistent array item')
+
+    def test_load_defaults(self):
+        c = Config()
+        c.load_defaults()
+        self.assertEqual(c.get('cfg', 'refdef-index', 'common', 'AT'), 'Attenuator', 'should read global config file')
+
+    def test_global_config_path(self):
+        c = Config()
+        self.assertEqual(c.global_config_path, pkg_resources.resource_filename('pcbmode', pcbmode.config.DEFAULT_CONFIG_FILENAME), 'should get correct global config path')
+
+    @patch('pcbmode.config.Config._default_config_filename', 'no_such_file.json')
+    def test_global_config_path_with_custom_filename(self):
+        c = Config()
+        self.assertEqual(c.global_config_path, pkg_resources.resource_filename('pcbmode', 'no_such_file.json'), 'should get correct global config path with custom filename')
+
+    @patch('pcbmode.utils.messages.error')
+    @patch('pcbmode.config.Config._default_config_filename', 'no_such_file.json')
+    def test_load_defaults_with_missing_global_file(self, e):
+        c = Config()
+        c.load_defaults()
+        e.assert_called_once()
+        self.assertRegex(e.call_args[0][0], r"Couldn't open PCBmodE's configuration file no_such_file\.json")

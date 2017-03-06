@@ -13,6 +13,11 @@ rte = {} # routing data
 tmp = {} # temporary data
 
 import pcbmode.utils.messages
+import pcbmode.utils.json
+import os
+from pkg_resources import resource_exists, resource_filename
+
+DEFAULT_CONFIG_FILENAME = 'pcbmode_config.json'
 
 class Config(object):
 
@@ -97,3 +102,35 @@ class Config(object):
             return next_dict
 
         return self._get_config(next_dict, *path_parts[1:])
+
+    @property
+    def _default_config_filename(self):
+        return DEFAULT_CONFIG_FILENAME
+
+    @property
+    def global_config_path(self):
+        return resource_filename('pcbmode', self._default_config_filename)
+
+    def load_defaults(self, filename=None):
+        global cfg
+        if filename is None:
+            filename = self._default_config_filename
+
+        config_file_paths = [
+            # config file in current directory
+            os.path.join(os.getcwd(), filename),
+            # global config file
+            self.global_config_path,
+        ]
+
+        # now find first of those files which actually exists
+        for config_file_path in config_file_paths:
+            if os.path.isfile(config_file_path):
+                cfg = pcbmode.utils.json.dictFromJsonFile(config_file_path)
+                break
+        else:
+            pretty_config_file_paths = ''.join(['\n  {}'.format(p) for p in config_file_paths])
+            pcbmode.utils.messages.error("Couldn't open PCBmodE's configuration file {}. Looked for it here:{}".format(filename, pretty_config_file_paths))
+
+        # at this point, config.cfg exists
+
