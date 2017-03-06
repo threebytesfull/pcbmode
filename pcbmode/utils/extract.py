@@ -9,6 +9,7 @@ from . import messages as msg
 # pcbmode modules
 from . import utils
 from .point import Point
+from pcbmode.utils.json import dictFromJsonFile
 
 
 
@@ -205,7 +206,7 @@ def extractRouting(svg_in):
     output_file = os.path.join(config.cfg['base-dir'],
                                config.cfg['name'] + '_routing.json')
     try:
-        routing_dict_old = utils.dictFromJsonFile(output_file, False)
+        routing_dict_old = dictFromJsonFile(output_file, False)
     except:
         routing_dict_old = {'routes': {}, 'vias': {}}
 

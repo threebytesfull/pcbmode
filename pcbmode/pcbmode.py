@@ -21,6 +21,7 @@ from .utils import messages as msg
 from .utils import bom
 from .utils import coord_file
 from .utils.board import Board
+from .utils.json import dictFromJsonFile
 
 
 def cmdArgSetup(pcbmode_version):
@@ -132,7 +133,7 @@ def makeConfig(name, version, cmdline_args):
         filename = path
         filenames += "  %s \n" % filename
         if os.path.isfile(filename):
-            config.cfg = utils.dictFromJsonFile(filename)
+            config.cfg = dictFromJsonFile(filename)
             break
 
     if config.cfg == {}:
@@ -150,7 +151,7 @@ def makeConfig(name, version, cmdline_args):
     filename = os.path.join(config.cfg['locations']['boards'],
                             config.cfg['name'],
                             config.cfg['name'] + '.json')
-    config.brd = utils.dictFromJsonFile(filename)
+    config.brd = dictFromJsonFile(filename)
 
     tmp_dict = config.brd.get('config')
     if tmp_dict != None:
@@ -183,7 +184,7 @@ def makeConfig(name, version, cmdline_args):
         filename = path
         filenames += "  %s \n" % filename
         if os.path.isfile(filename):
-            config.stl['layout'] = utils.dictFromJsonFile(filename)
+            config.stl['layout'] = dictFromJsonFile(filename)
             break
 
     if not 'layout' in config.stl or config.stl['layout'] == {}:
@@ -208,7 +209,7 @@ def makeConfig(name, version, cmdline_args):
         filename = path
         filenames += "  %s \n" % filename
         if os.path.isfile(filename):
-            config.stk = utils.dictFromJsonFile(filename)
+            config.stk = dictFromJsonFile(filename)
             break
 
     if config.stk == {}:
@@ -231,7 +232,7 @@ def makeConfig(name, version, cmdline_args):
     # Open database file. If it doesn't exist, leave the database in
     # ots initial state of {}
     if os.path.isfile(filename):
-        config.pth = utils.dictFromJsonFile(filename)
+        config.pth = dictFromJsonFile(filename)
 
 
     #----------------------------------------------------------------
@@ -243,7 +244,7 @@ def makeConfig(name, version, cmdline_args):
     # Open database file. If it doesn't exist, leave the database in
     # ots initial state of {}
     if os.path.isfile(filename):
-        config.rte = utils.dictFromJsonFile(filename)
+        config.rte = dictFromJsonFile(filename)
     else:
         config.rte = {}
 

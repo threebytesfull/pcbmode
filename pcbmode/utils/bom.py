@@ -8,6 +8,8 @@ import pcbmode.config as config
 from . import utils
 from . import messages as msg
 
+from pcbmode.utils.json import dictFromJsonFile
+
 
 
 def make_bom(quantity=None):

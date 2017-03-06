@@ -12,6 +12,8 @@ from .shape import Shape
 from .style import Style
 from .footprint import Footprint
 
+from pcbmode.utils.json import dictFromJsonFile
+
 
 
 class Component():
@@ -51,7 +53,7 @@ class Component():
         footprint_dict = None
         for path in paths:
             if os.path.isfile(path):
-                footprint_dict = utils.dictFromJsonFile(path)
+                footprint_dict = dictFromJsonFile(path)
                 break
 
         if footprint_dict == None:

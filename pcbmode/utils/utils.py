@@ -23,7 +23,6 @@ import pcbmode.config as config
 from .point import Point
 from . import messages as msg
 import hashlib
-from pcbmode.utils.json import dictFromJsonFile
 
 
 
