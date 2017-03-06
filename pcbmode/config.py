@@ -134,3 +134,18 @@ class Config(object):
 
         # at this point, config.cfg exists
 
+    def path_in_location(self, location, *filenames, absolute=False):
+        base_dir = self.get('cfg', 'base-dir')
+        if base_dir is None:
+            raise Exception('cannot determine paths until base-dir has been set')
+
+        location_dir = self.get('cfg', 'locations', location)
+        if location_dir is None:
+            raise Exception('cannot determine path for unknown location')
+
+        path = os.path.join(base_dir, location_dir, *filenames)
+
+        if absolute:
+            return os.path.abspath(path)
+        else:
+            return path

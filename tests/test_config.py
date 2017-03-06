@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch
 
+import os
 import pkg_resources
 
 import pcbmode.config
@@ -105,3 +106,52 @@ class TestConfig(unittest.TestCase):
         c.load_defaults()
         e.assert_called_once()
         self.assertRegex(e.call_args[0][0], r"Couldn't open PCBmodE's configuration file no_such_file\.json")
+
+    def test_path_in_location_without_base_dir(self):
+        c = Config(clean=True)
+        self.assertIsNone(c.get('cfg', 'base-dir'), 'base-dir should not be set')
+        with self.assertRaisesRegex(Exception, r"cannot determine paths until base-dir has been set"):
+            c.path_in_location('build', 'test.svg')
+
+    def test_path_in_location_with_unknown_location(self):
+        c = Config(clean=True)
+        c.cfg['base-dir'] = os.getcwd()
+        self.assertIsNotNone(c.get('cfg', 'base-dir'), 'base-dir should be set')
+        with self.assertRaisesRegex(Exception, r'cannot determine path for unknown location'):
+            c.path_in_location('build', 'test.svg')
+
+    def test_path_in_location_with_known_location(self):
+        c = Config(clean=True)
+        c.cfg['base-dir'] = 'some_base_dir'
+        c.cfg['locations'] = { 'build' : 'some_build_directory' }
+        self.assertEqual(c.get('cfg', 'base-dir'), 'some_base_dir', 'base-dir should be set')
+        self.assertEqual(c.get('cfg', 'locations', 'build'), 'some_build_directory', 'locations.build should be set')
+        path = c.path_in_location('build', 'test.svg')
+        self.assertEqual(path, os.path.join('some_base_dir', 'some_build_directory', 'test.svg'), 'should get expected file path')
+
+    def test_path_in_location_with_known_location_absolute(self):
+        c = Config(clean=True)
+        c.cfg['base-dir'] = 'some_base_dir'
+        c.cfg['locations'] = { 'build': 'some_build_directory' }
+        self.assertEqual(c.get('cfg', 'base-dir'), 'some_base_dir', 'base-dir should be set')
+        self.assertEqual(c.get('cfg', 'locations', 'build'), 'some_build_directory', 'locations.build should be set')
+        path = c.path_in_location('build', 'test.svg', absolute=True)
+        self.assertEqual(path, os.path.join(os.getcwd(), 'some_base_dir', 'some_build_directory', 'test.svg'), 'should get expected file path')
+
+    def test_longer_path_in_location_with_known_location(self):
+        c = Config(clean=True)
+        c.cfg['base-dir'] = 'some_base_dir'
+        c.cfg['locations'] = { 'build' : 'some_build_directory' }
+        self.assertEqual(c.get('cfg', 'base-dir'), 'some_base_dir', 'base-dir should be set')
+        self.assertEqual(c.get('cfg', 'locations', 'build'), 'some_build_directory', 'locations.build should be set')
+        path = c.path_in_location('build', 'some_intermediate_dir', 'another_intermediate_dir', 'test.svg')
+        self.assertEqual(path, os.path.join('some_base_dir', 'some_build_directory', 'some_intermediate_dir', 'another_intermediate_dir', 'test.svg'), 'should get expected file path')
+
+    def test_longer_path_in_location_with_known_location_absolute(self):
+        c = Config(clean=True)
+        c.cfg['base-dir'] = 'some_base_dir'
+        c.cfg['locations'] = { 'build': 'some_build_directory' }
+        self.assertEqual(c.get('cfg', 'base-dir'), 'some_base_dir', 'base-dir should be set')
+        self.assertEqual(c.get('cfg', 'locations', 'build'), 'some_build_directory', 'locations.build should be set')
+        path = c.path_in_location('build', 'some_intermediate_dir', 'another_intermediate_dir', 'test.svg', absolute=True)
+        self.assertEqual(path, os.path.join(os.getcwd(), 'some_base_dir', 'some_build_directory', 'some_intermediate_dir', 'another_intermediate_dir', 'test.svg'), 'should get expected file path')

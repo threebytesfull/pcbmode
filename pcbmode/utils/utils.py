@@ -18,6 +18,7 @@ except:
 from pkg_resources import get_distribution
 
 import pcbmode.config as config
+from pcbmode.config import Config
 
 # pcbmode modules
 from .point import Point
@@ -48,9 +49,9 @@ def openBoardSVG():
     Returns an ElementTree object
     """
 
-    filename = os.path.join(config.cfg['base-dir'],
-                            config.cfg['locations']['build'],
-                            config.cfg['name'] + '.svg')
+    c = Config()
+    filename = c.path_in_location('build', c.get('cfg', 'name') + '.svg')
+
     try:
         data = et.ElementTree(file=filename)
     except IOError as e:
@@ -118,10 +119,10 @@ def makePngs():
     Creates a PNG of the board using Inkscape
     """
 
+    c = Config()
+
     # Directory for storing the Gerbers within the build path
-    images_path = os.path.join(config.cfg['base-dir'],
-                               config.cfg['locations']['build'],
-                               'images')
+    images_path = c.path_in_location('build', 'images')
     # Create it if it doesn't exist
     create_dir(images_path)
 
@@ -129,14 +130,12 @@ def makePngs():
     png_dpi = 600
     msg.subInfo("Generating PNGs for each layer of the board")
 
+    file_path = c.path_in_location('build', c.get('cfg', 'name') + '.svg')
+
     command = ['inkscape',
                '--without-gui',
-               '--file=%s' % os.path.abspath(os.path.join(config.cfg['base-dir'],
-                                                          config.cfg['locations']['build'],
-                                                          config.cfg['name'] + '.svg')),
-               '--export-png=%s' % os.path.abspath(os.path.join(images_path, config.cfg['name'] + '_rev_' +
-                                                                config.brd['config']['rev'] +
-                                                                '.png')),
+               '--file=%s' % c.path_in_location('build', c.get('cfg', 'name') + '.svg', absolute=True),
+               '--export-png=%s' % c.path_in_location('build', 'images', c.get('cfg', 'name') + '_rev_' + c.get('brd', 'config', 'rev') + '.png', absolute=True),
                '--export-dpi=%s' % str(png_dpi),
                '--export-area-drawing',
                '--export-background=#FFFFFF']
@@ -406,9 +405,7 @@ def renumberRefdefs(order):
 
     # Save board config to file (everything is saved, not only the
     # component data)
-    filename = os.path.join(config.cfg['locations']['boards'],
-                            config.cfg['name'],
-                            config.cfg['name'] + '.json')
+    filename = c.path_in_location('boards', c.get('name'), c.get('name') + '.json')
     try:
         with open(filename, 'wb') as f:
             f.write(json.dumps(config.brd, sort_keys=True, indent=2))
