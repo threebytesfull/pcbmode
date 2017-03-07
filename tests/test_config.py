@@ -107,6 +107,17 @@ class TestConfig(unittest.TestCase):
         e.assert_called_once()
         self.assertRegex(e.call_args[0][0], r"Couldn't open PCBmodE's configuration file no_such_file\.json")
 
+    @patch('pcbmode.utils.messages.error')
+    @patch('pcbmode.config.Config._default_config_filename', 'global_defaults.json')
+    def test_load_defaults_with_custom_missing_file(self, e):
+        c = Config()
+        c.load_defaults(filename='missing_config_file.json')
+        e.assert_called_once()
+        message_lines = e.call_args[0][0].split('\n')
+        self.assertRegex(message_lines[0], r"Couldn't open PCBmodE's configuration file missing_config_file.json.", 'should get missing config message')
+        self.assertRegex(message_lines[1], r"missing_config_file.json", 'should look for specified config file first')
+        self.assertRegex(message_lines[2], r"global_defaults.json", 'should fall back to global config file')
+
     def test_path_in_location_without_base_dir(self):
         c = Config(clean=True)
         self.assertIsNone(c.get('cfg', 'base-dir'), 'base-dir should not be set')
