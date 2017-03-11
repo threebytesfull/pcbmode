@@ -148,7 +148,7 @@ class Config(object):
 
         # next, read global styles
         layout_resource_path = resource_filename('pcbmode', os.path.join('styles', self._default_style_layout, 'layout.json'))
-        stl = pcbmode.utils.json.dictFromJsonFile(layout_resource_path)
+        stl = { 'layout': pcbmode.utils.json.dictFromJsonFile(layout_resource_path) }
 
         # next, read global stackup data
         stackup_resource_path = resource_filename('pcbmode', os.path.join('stackups', self._default_stackup_name + '.json'))
