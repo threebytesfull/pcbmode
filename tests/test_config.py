@@ -30,6 +30,10 @@ class TestConfig(unittest.TestCase):
         c.tmp['test'] = 'data'
         self.assertEqual(pcbmode.config.tmp.get('test'), 'data', 'object attribute and global should be same dict')
 
+    def test_config_subscripts_are_same_as_globals(self):
+        c = Config(clean=True)
+        self.assertIs(c.get('cfg'), c['cfg'], 'config subscript for {} should be same object as global'.format('cfg'))
+
     def test_config_init_with_clean(self):
         c1 = Config()
         c1.tmp['test'] = 'data'
@@ -86,9 +90,18 @@ class TestConfig(unittest.TestCase):
             self.assertEqual(c.get(top, 'food', 2, 'fruit'), None, 'should get None from nonexistent array item')
 
     def test_load_defaults(self):
-        c = Config()
+        c = Config(clean=True)
+        for top in self.top_level_keys:
+            with self.subTest(key=top):
+                self.assertEqual(c.get(top), {}, msg="should start with no data for config.{}".format(top))
         c.load_defaults()
+        for top in self.top_level_keys:
+            with self.subTest(key=top):
+                self.assertIs(c.get(top), vars(pcbmode.config)[top], 'should not break object identity for {}'.format(top))
+                self.assertIsInstance(c.get(top), dict, 'config.{} should be a dict'.format(top))
         self.assertEqual(c.get('cfg', 'refdef-index', 'common', 'AT'), 'Attenuator', 'should read global config file')
+        self.assertIsNotNone(c.get('stl'), 'style data should be present after load_defaults')
+        self.assertIsNotNone(c.get('stk'), 'stackup data should be present after load_defaults')
 
     def test_global_config_path(self):
         c = Config()

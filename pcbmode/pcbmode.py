@@ -122,22 +122,8 @@ def makeConfig(name, version, cmdline_args):
     # calling directory, and then where the script is
     msg.info("Processing PCBmodE's configuration file")
 
-    paths = [os.path.join(os.getcwd(), cmdline_args.config_file)]
-
-    config_resource = (__name__, 'pcbmode_config.json')
-    if resource_exists(*config_resource):
-        paths.append(resource_filename(*config_resource))
-
-    filenames = ''
-    for path in paths:
-        filename = path
-        filenames += "  %s \n" % filename
-        if os.path.isfile(filename):
-            config.cfg = dictFromJsonFile(filename)
-            break
-
-    if config.cfg == {}:
-        msg.error("Couldn't open PCBmodE's configuration file %s. Looked for it here:\n%s" % (cmdline_args.config_file, filenames))
+    c = Config(clean=True)
+    c.load_defaults(filename=cmdline_args.config_file)
 
     # add stuff
     config.cfg['name'] = name

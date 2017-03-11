@@ -18,6 +18,8 @@ import os
 from pkg_resources import resource_exists, resource_filename
 
 DEFAULT_CONFIG_FILENAME = 'pcbmode_config.json'
+DEFAULT_STYLE_LAYOUT = 'default'
+DEFAULT_STACKUP = 'two-layer'
 
 class Config(object):
 
@@ -103,19 +105,31 @@ class Config(object):
 
         return self._get_config(next_dict, *path_parts[1:])
 
+    def __getitem__(self, key):
+        return self.get(key)
+
     @property
     def _default_config_filename(self):
         return DEFAULT_CONFIG_FILENAME
+
+    @property
+    def _default_style_layout(self):
+        return DEFAULT_STYLE_LAYOUT
+
+    @property
+    def _default_stackup_name(self):
+        return DEFAULT_STACKUP
 
     @property
     def global_config_path(self):
         return resource_filename('pcbmode', self._default_config_filename)
 
     def load_defaults(self, filename=None):
-        global cfg
+        global cfg, stl
         if filename is None:
             filename = self._default_config_filename
 
+        # first, read config
         config_file_paths = [
             # config file in current directory
             os.path.join(os.getcwd(), filename),
@@ -132,7 +146,36 @@ class Config(object):
             pretty_config_file_paths = ''.join(['\n  {}'.format(p) for p in config_file_paths])
             pcbmode.utils.messages.error("Couldn't open PCBmodE's configuration file {}. Looked for it here:{}".format(filename, pretty_config_file_paths))
 
-        # at this point, config.cfg exists
+        # next, read global styles
+        layout_resource_path = resource_filename('pcbmode', os.path.join('styles', self._default_style_layout, 'layout.json'))
+        stl = pcbmode.utils.json.dictFromJsonFile(layout_resource_path)
+
+        # next, read global stackup data
+        stackup_resource_path = resource_filename('pcbmode', os.path.join('stackups', self._default_stackup_name + '.json'))
+        stk = pcbmode.utils.json.dictFromJsonFile(stackup_resource_path)
+
+        # TODO: set base-dir, name, version, digest-digits
+
+        # TODO: read brd data from board's config file
+        # * read board config
+        # board_path = cfg.locations.boards / cfg.name / cfg.name + .json
+        # brd = dictFromJsonFile(board_path)
+        # brd.config ||= {}
+        # brd.config.units ||= mm
+        # brd.config.style-layout ||= default
+
+        # TODO: read stl data from style layout file
+        # * if board has style layout, load its style layout or appropriate global style layout
+        # layout_path = cfg.base-dir / cfg.locations.styles / brd.config.style-layout / layout.json
+        # layout_rsrc = pkg / styles / brd.config.style-layout, layout.json
+        # stl = dictFromJsonFile(first_existing layout_path, layout_rsrc)
+
+        # TODO: read stk data from stackups file
+        # * if board has stackup, load its stackup data or appropriate global stackup data
+        # stackup_name = brd.stackup.name + .json || two-layer.json
+        # stackup_path = cfg.base-dir / cfg.locations.stackups / stackup_name
+        # stackup_rsrc = pkg / stackups / stackup_name
+        # stk = dictFromJsonFile(first_existing stackup_path, stackup_rsrc)
 
     def path_in_location(self, location, *filenames, absolute=False):
         base_dir = self.get('cfg', 'base-dir')
