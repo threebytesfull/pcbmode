@@ -242,5 +242,5 @@ class TestPoint(unittest.TestCase):
                         self.assertEqual(p.x, round(x, sig_dig), 'should get correctly rounded x coordinate')
                         self.assertEqual(p.y, round(y, sig_dig), 'should get correctly rounded y coordinate')
 
-if __name__ == '__main__': # pragma: no cover
+if __name__ == '__main__':
     unittest.main()
