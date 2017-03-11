@@ -10,7 +10,7 @@ from . import messages as msg
 
 
 # pcbmode modules
-from . import svg 
+from . import svg
 from . import utils
 from . import place
 import copy
@@ -28,7 +28,7 @@ class Footprint():
 
         self._footprint = footprint
 
-        
+
 
         self._shapes = {'conductor': {},
                         'pours': {},
@@ -98,7 +98,7 @@ class Footprint():
                     pin_label = pins[pin]['layout'].get('label') or pin
 
                 for layer in layers:
-                    
+
                     shape = Shape(shape_dict)
                     style = Style(shape_dict, 'conductor')
                     shape.setStyle(style)
@@ -107,11 +107,11 @@ class Footprint():
                     except:
                         self._shapes['conductor'][layer] = []
                         self._shapes['conductor'][layer].append(shape)
-                        
+
                     for stype in ['soldermask','solderpaste']:
 
                         # Get a custom shape specification if it exists
-                        sdict_list = shape_dict.get(stype) 
+                        sdict_list = shape_dict.get(stype)
 
                         # Not defined; default
                         if sdict_list == None:
@@ -181,13 +181,13 @@ class Footprint():
 
                                 # Create new shape
                                 sshape = Shape(sdict)
-     
+
                                 # Create new style
                                 sstyle = Style(sdict, stype)
-                                
+
                                 # Apply style
                                 sshape.setStyle(sstyle)
-     
+
                                 # Add shape to footprint's shape dictionary
                                 #self._shapes[stype][layer].append(sshape)
                                 try:
@@ -196,7 +196,7 @@ class Footprint():
                                     self._shapes[stype][layer] = []
                                     self._shapes[stype][layer].append(sshape)
 
-     
+
                     # Add pin label
                     if (pin_label != None):
                         shape.setLabel(pin_label)
@@ -219,7 +219,7 @@ class Footprint():
                 except:
                     self._shapes['drills']['top'] = []
                     self._shapes['drills']['top'].append(shape)
-                        
+
 
 
 
@@ -231,7 +231,7 @@ class Footprint():
         try:
             shapes = self._footprint['layout']['pours']['shapes']
         except:
-            return        
+            return
 
         for shape_dict in shapes:
             layers = utils.getExtendedLayerList(shape_dict.get('layers') or ['top'])
@@ -262,7 +262,7 @@ class Footprint():
                 shapes = self._footprint['layout'][sheet]['shapes']
             except:
                 shapes = []
-     
+
             for shape_dict in shapes:
                 layers = utils.getExtendedLayerList(shape_dict.get('layers') or ['top'])
                 for layer in layers:

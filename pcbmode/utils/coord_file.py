@@ -13,7 +13,7 @@ from .style import Style
 
 def makeCoordFile(arg=False):
     """
-    
+
     """
 
 
@@ -60,7 +60,7 @@ def makeCoordFile(arg=False):
     # CSV header
     header = "%s,%s,%s,%s,%s" % ('Designator',
                                  'Placement-layer',
-                                 'Coord-X(mm)', 
+                                 'Coord-X(mm)',
                                  'Coord-Y(mm)',
                                  'Rotation(deg)')
 
@@ -73,7 +73,7 @@ def makeCoordFile(arg=False):
             ent = comp_dict[refdef]
             f.write("%s,%s,%s,%s,%s\n" % (refdef,
                                           ent['layer'],
-                                          ent['location'][0], 
+                                          ent['location'][0],
                                           ent['location'][1],
                                           ent['rotate']))
 
@@ -87,7 +87,7 @@ def makeCoordFile(arg=False):
             ent = comp_dict[refdef]
             f.write("%s,%s,%s,%s,%s\n" % (refdef,
                                           ent['layer'],
-                                          board_width/2 + ent['location'][0], 
+                                          board_width/2 + ent['location'][0],
                                           board_height/2 + ent['location'][1],
                                           ent['rotate']))
 

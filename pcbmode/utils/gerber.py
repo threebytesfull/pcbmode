@@ -27,25 +27,25 @@ def gerberise(manufacturer='default'):
     # Get Gerber generation settings
     gcd = config.brd['gerber']
     decimals = gcd['decimals']
-    digits = gcd['digits'] 
+    digits = gcd['digits']
     steps = gcd['steps-per-segment']
     length = gcd['min-segment-length']
 
     # Get layer data
     xpath_regex = ""
     ns = {'pcbmode':config.cfg['ns']['pcbmode'],
-          'svg':config.cfg['ns']['svg']} 
+          'svg':config.cfg['ns']['svg']}
 
 
     # Save to file
-    base_dir = os.path.join(config.cfg['base-dir'], 
-                            config.cfg['locations']['build'], 
+    base_dir = os.path.join(config.cfg['base-dir'],
+                            config.cfg['locations']['build'],
                             'production')
     # Create directory if it doesn't exist already
     utils.create_dir(base_dir)
     base_name = "%s_rev_%s" % (config.brd['config']['name'],
                                config.brd['config']['rev'])
- 
+
     filename_info = config.cfg['manufacturers'][manufacturer]['filenames']['gerbers']
 
     # Process Gerbers for PCB layers and sheets
@@ -89,7 +89,7 @@ def gerberise(manufacturer='default'):
                 add = '_%s_%s.%s' % (pcb_layer, sheet, ext)
 
                 filename = os.path.join(base_dir, base_name + add)
-     
+
                 with open(filename, "wb") as f:
                     for line in gerber.getGerber():
                         f.write(line)
@@ -100,7 +100,7 @@ def gerberise(manufacturer='default'):
     for sheet in sheets:
         # Get the SVG layer corresponding to the 'sheet'
         sheet_layer = svg_in.find(".//svg:g[@pcbmode:sheet='%s']" % (sheet),
-                                  namespaces=ns)            
+                                  namespaces=ns)
 
         # Create a Gerber object
         gerber = Gerber(sheet_layer,
@@ -133,7 +133,7 @@ class Gerber():
 
     def __init__(self,
                  svg,
-                 mask_paths, 
+                 mask_paths,
                  decimals,
                  digits,
                  steps,
@@ -142,7 +142,7 @@ class Gerber():
         """
 
         self._ns = {'pcbmode':config.cfg['ns']['pcbmode'],
-                    'svg':config.cfg['ns']['svg']} 
+                    'svg':config.cfg['ns']['svg']}
 
         self._svg = svg
         self._mask_paths = mask_paths
@@ -153,7 +153,7 @@ class Gerber():
         self._grammar = self._getGerberGrammar()
 
         self._aperture_list = []
-        
+
         # Gerber apertures are defined at the begining of the file and
         # then refered to by number. 1--10 are reserved and cannot be
         # used, so wer start the design's apersute number at 20,
@@ -183,19 +183,19 @@ class Gerber():
 
             tmp['gerber-lp'] = path.get('{'+config.cfg['ns']['pcbmode']+'}gerber-lp')
 
-            # Get the absolute location 
+            # Get the absolute location
             location = self._getLocation(path)
 
             # Get path coordinates; each path segment as a list item
             tmp['coords'] = self._getCommandListOfPath(path, location)
 
             self._commands.append(tmp)
-        
+
         self._flattenCoords()
         self._flashes = self._getFlashes()
         self._preamble = self._createPreamble()
         self._postamble = self._createPostamble()
-        
+
 
 
 
@@ -209,21 +209,21 @@ class Gerber():
         """
 
         fc = []
-        fc.append("\n")        
-        fc.append("G04 Pad flashes *\n")        
+        fc.append("\n")
+        fc.append("G04 Pad flashes *\n")
         fc.append("%LPD*%\n")
         fc.append("D%d*\n" % self._pad_flashes_aperture_num)
 
         # Get pads
         pad_paths = self._svg.findall(".//svg:g[@pcbmode:sheet='pads']//svg:path",
-                                      namespaces=self._ns)        
-        
+                                      namespaces=self._ns)
+
         for pad_path in pad_paths:
             location = self._getLocation(pad_path)
             text = self._getGerberisedPoint(location, Point())
-            fc.append("%sD03*\n" % text)            
-        
-        fc.append("\n")        
+            fc.append("%sD03*\n" % text)
+
+        fc.append("\n")
 
         return fc
 
@@ -250,7 +250,7 @@ class Gerber():
         transform = path.get('transform')
         if transform != None:
             transform_data = utils.parseTransform(transform)
-            location += transform_data['location']        
+            location += transform_data['location']
 
         return location
 
@@ -327,7 +327,7 @@ class Gerber():
             gerber = (self._preamble+
                       self._flattened_commands+
                       self._postamble)
-        
+
         return gerber
 
 
@@ -374,7 +374,7 @@ class Gerber():
                 if cmd_set['style'] == 'fill':
                     # Close the 'closed' shape
                     commands.append("G37*\n")
-        
+
         self._flattened_commands = commands
 
 
@@ -391,7 +391,7 @@ class Gerber():
         if comment != None:
             commands.append('G04 ' + comment + ' *\n')
         commands.append('%' + param + '*%\n')
- 
+
         return commands
 
 
@@ -403,7 +403,7 @@ class Gerber():
         Converts a path into points
         """
         path = SvgPath(path.get('d'))
-        coords = path.getCoordList(self._steps, 
+        coords = path.getCoordList(self._steps,
                                    self._length)
 
         return coords
@@ -453,21 +453,21 @@ class Gerber():
 
     def _getGerberisedPoint(self, coord, offset):
         """
-        Convert a float to the ridiculous Gerber format 
+        Convert a float to the ridiculous Gerber format
         """
- 
+
         # Add offset to coordinate
         coord += offset
-     
-        # Split to integer and decimal content; the reformatting is required 
+
+        # Split to integer and decimal content; the reformatting is required
         # for floats coming in represented in scientific notation
         xi, xd = str("%f"%coord.x).split(".")
         yi, yd = str("%f"%-coord.y).split(".")
-     
+
         # Pad decimals to required number of digits for Gerber (yuck!)
         xd = xd.ljust(self._decimals, '0')
         yd = yd.ljust(self._decimals, '0')
-     
+
         return "X%s%sY%s%s" % (xi, xd[:self._decimals], yi, yd[:self._decimals])
 
 
@@ -527,7 +527,7 @@ class Gerber():
 
         # List all apertures captured for this sheet
         for aperture in self._apertures:
-            pa.append("%%ADD%dC,%.2fX*%%\n" % (self._apertures[aperture], 
+            pa.append("%%ADD%dC,%.2fX*%%\n" % (self._apertures[aperture],
                                                float(aperture)))
         pa.append("\n")
 
@@ -542,166 +542,166 @@ class Gerber():
        """
        Returns the grammar of Gerber
        """
-     
+
        gerber_dictionary = {
-           "G04": { "text": "comment" },   
-           "G36": { "text": "closed-shape-start" }, 
+           "G04": { "text": "comment" },
+           "G36": { "text": "closed-shape-start" },
            "G37": { "text": "closed-shape-end" },
-     
+
            "MO": { "text": "units",
                    "MM": { "text": "mm" },
                    "IN": { "text": "inch" }
                  },
-     
+
            "AD": { "text": "aperture-definition",
                    "C": { "text": "circle" },
                    "R": { "text": "rectangle" }
                  },
-     
+
            "FS": { "text": "format" ,
                    "L": { "text": "leading-zeros" },
                    "A": { "text": "absolute" }
                  },
-           
+
            "D01": { "text": "draw"},
            "D02": { "text": "move"},
            "D03": { "text": "flash"}
        }
-     
+
        # Define grammar using pyparsing
        space = pyp.Literal(' ')
        comma = pyp.Literal(',').suppress()
-     
+
        # Capture a float string and cast to float
        floatnum = pyp.Regex(r'([\d\.]+)').setParseAction(lambda t: float(t[0]))
-     
+
        # Capture integer string and cast to int
        integer = pyp.Regex(r'(-?\d+)').setParseAction(lambda t: int(t[0]))
-     
+
        # Capture single digit string and cast to int
        single_digit = pyp.Regex(r'(\d)').setParseAction(lambda t: int(t[0]))
-     
+
        aperture = pyp.Literal('D').setParseAction(pyp.replaceWith('aperture'))
        coord_x = pyp.Literal('X').setParseAction(pyp.replaceWith('x'))
        coord_y = pyp.Literal('Y').setParseAction(pyp.replaceWith('y'))
        gcoord = pyp.Regex(r'(-?\d+)')
        coord_dict = pyp.dictOf((coord_x | coord_y), gcoord)
        coord_xy = pyp.Group(coord_dict + coord_dict)
-     
+
        inst_del = pyp.Literal('%').suppress() # instruction delimeter
        inst_end = pyp.Literal('*').suppress() # ending suffix
-     
+
        cmd_comment = pyp.Literal('G04').setParseAction(pyp.replaceWith('comment'))
-     
+
        cmd_closed_shape_start = pyp.Literal('G36')
        cmd_closed_shape_end = pyp.Literal('G37')
-     
+
        cmd_units = pyp.Literal('MO')('gerber-command')
        cmd_units_opt_mm = pyp.Literal('MM').setParseAction(pyp.replaceWith('mm'))
        cmd_units_opt_inch = pyp.Literal('IN').setParseAction(pyp.replaceWith('inch'))
-     
+
        cmd_format = pyp.Literal('FS')('gerber-command')
        cmd_format_opt_leading_zeros = pyp.Literal('L').setParseAction(pyp.replaceWith('leading'))
        cmd_format_opt_trailing_zeros = pyp.Literal('T').setParseAction(pyp.replaceWith('trailing'))
-     
-       cmd_format_opt_absolute = pyp.Literal('A').setParseAction(pyp.replaceWith('absolute')) 
-       cmd_format_opt_incremental = pyp.Literal('I').setParseAction(pyp.replaceWith('incremental')) 
-     
+
+       cmd_format_opt_absolute = pyp.Literal('A').setParseAction(pyp.replaceWith('absolute'))
+       cmd_format_opt_incremental = pyp.Literal('I').setParseAction(pyp.replaceWith('incremental'))
+
        # Aperture definition
        cmd_ap_def = pyp.Literal('AD')('gerber-command')
        cmd_ap_def_num = 'D' + integer.setResultsName('number')
        cmd_ap_def_opt_circ = pyp.Literal('C').setParseAction(pyp.replaceWith('circle'))
        cmd_ap_def_opt_rect = pyp.Literal('R').setParseAction(pyp.replaceWith('rect'))
-     
+
        cmd_polarity = pyp.Literal('LP')('gerber-command')
        cmd_polarity_opt_dark = pyp.Literal('D').setParseAction(pyp.replaceWith('dark'))
        cmd_polarity_opt_clear = pyp.Literal('C').setParseAction(pyp.replaceWith('clear'))
-     
+
        cmd_linear_int = pyp.Literal('G01').suppress() # lineal interpolation
        cmd_circ_int_cw = pyp.Literal('G02').suppress() # circular int. clockwise
        cmd_circ_int_ccw = pyp.Literal('G03').suppress() # circular int. counter-clockwise
-     
-       aperture_type = (((cmd_ap_def_opt_circ('type') + comma) + (floatnum)('diameter') + 'X') | 
-                        ((cmd_ap_def_opt_rect('type') + comma) + (floatnum)('width') + 'X' + (floatnum)('height'))) 
-     
+
+       aperture_type = (((cmd_ap_def_opt_circ('type') + comma) + (floatnum)('diameter') + 'X') |
+                        ((cmd_ap_def_opt_rect('type') + comma) + (floatnum)('width') + 'X' + (floatnum)('height')))
+
        polarity_type = (cmd_polarity_opt_clear | cmd_polarity_opt_dark)('polarity')
-     
+
        units_type = (cmd_units_opt_mm | cmd_units_opt_inch)('units')
-     
+
        format_zeros = ((cmd_format_opt_leading_zeros('zeros')) |
                        (cmd_format_opt_trailing_zeros('zeros')))
-     
+
        format_notation = ((cmd_format_opt_absolute('notation')) |
                           (cmd_format_opt_incremental('notation')))
-     
+
        format_data = (single_digit)('integer') + single_digit('decimal')
-     
+
        # comments (suppress)
-       comment = (cmd_comment + 
-                  pyp.Optional(space) + 
-                  pyp.Regex(r"([^\*]+)?") + 
-                  pyp.Optional(space) + 
+       comment = (cmd_comment +
+                  pyp.Optional(space) +
+                  pyp.Regex(r"([^\*]+)?") +
+                  pyp.Optional(space) +
                   inst_end).suppress()
-     
+
        units = (inst_del +
                 pyp.Group(cmd_units +
-                units_type)('units') +  
-                inst_end + 
+                units_type)('units') +
+                inst_end +
                 inst_del)
-     
+
        gformat = (inst_del +
                   pyp.Group(cmd_format +
                   format_zeros +
                   format_notation +
-                  'X' + pyp.Group(format_data)('x') + 
-                  'Y' + pyp.Group(format_data)('y'))('format') + 
+                  'X' + pyp.Group(format_data)('x') +
+                  'Y' + pyp.Group(format_data)('y'))('format') +
                   inst_end +
                   inst_del)
-     
-       ap_def = (inst_del + 
+
+       ap_def = (inst_del +
                   pyp.Group(cmd_ap_def +
                   cmd_ap_def_num +
                   aperture_type)('aperture_definition') +
                   inst_end +
                   inst_del)
-     
+
        polarity = (inst_del +
                    pyp.Group(cmd_polarity +
                    polarity_type)('polarity_change') +
                    inst_end +
-                   inst_del)      
-     
+                   inst_del)
+
        closed_shape_start = (cmd_closed_shape_start('start_closed_shape') + inst_end)
        closed_shape_end = (cmd_closed_shape_end('end_closed_shape') + inst_end)
-     
+
        draw = pyp.Group(pyp.Optional(cmd_linear_int) +
                'X' + (integer)('x') +
                'Y' + (integer)('y') +
                pyp.Literal('D01').suppress() +
                inst_end)('draw')
-     
+
        move = pyp.Group(pyp.Optional(cmd_linear_int) +
                'X' + (integer)('x') +
                'Y' + (integer)('y') +
                pyp.Literal('D02').suppress() +
                inst_end)('move')
-     
+
        flash = pyp.Group(pyp.Optional(cmd_linear_int) +
                'X' + (integer)('x') +
                'Y' + (integer)('y') +
                pyp.Literal('D03').suppress() +
                inst_end)('flash')
-     
-       aperture_change = (pyp.Literal('D').suppress() + 
+
+       aperture_change = (pyp.Literal('D').suppress() +
                           pyp.Group(integer('number') + inst_end)('aperture_change'))
-     
+
        # end of file (suppress)
        the_end = (pyp.Literal('M02') + inst_end)('end_of_gerber')
-     
-     
-       grammar = (comment | 
-                  units | 
-                  gformat | 
+
+
+       grammar = (comment |
+                  units |
+                  gformat |
                   ap_def |
                   aperture_change |
                   draw | move | flash |
@@ -709,9 +709,9 @@ class Gerber():
                   closed_shape_start |
                   closed_shape_end |
                   the_end)
-     
-       
-     
+
+
+
        return pyp.OneOrMore(pyp.Group(grammar))
 
 
@@ -731,27 +731,27 @@ def gerbers_to_svg(manufacturer='default'):
 
         # TODO: actually support anything other than leading zeros
         number = gerber_number / pow(10.0, form[axis]['decimal'])
-        
+
         return number
- 
+
 
     def parsed_grammar_to_dict(parsed_grammar):
         """
         Converts the Gerber parsing results to an SVG.
-        """ 
- 
+        """
+
         gerber_dict = {}
         current_aperture = None
         new_shape = True
 
         for line in parsed_grammar:
-            if line.dump(): 
+            if line.dump():
                 if (line.format):
                     if gerber_dict.get('format') is None:
                         gerber_dict['format'] = {}
                     tmp = gerber_dict['format']
-                    
-                    tmp['notation'] = line['format']['notation'] 
+
+                    tmp['notation'] = line['format']['notation']
                     tmp['zeros'] = line['format']['zeros']
                     tmp['x'] = {}
                     tmp['x']['integer'] = line['format']['x']['integer']
@@ -759,7 +759,7 @@ def gerbers_to_svg(manufacturer='default'):
                     tmp['y'] = {}
                     tmp['y']['integer'] = line['format']['x']['integer']
                     tmp['y']['decimal'] = line['format']['x']['decimal']
-                 
+
                 elif (line.units):
                     gerber_dict['units'] = line['units']['units']
 
@@ -776,17 +776,17 @@ def gerbers_to_svg(manufacturer='default'):
                         tmp['number'] = line['aperture_definition']['number']
                     else:
                         print("ERROR: cannot recognise aperture definition type")
-                    
+
                     if gerber_dict.get('aperture-definitions') is None:
                         gerber_dict['aperture-definitions'] = []
-                    
+
                     gerber_dict['aperture-definitions'].append(tmp)
 
                 elif line.polarity_change:
 
                     if gerber_dict.get('features') is None:
                         gerber_dict['features'] = []
-  
+
                     polarity = line['polarity_change']['polarity']
                     polarity_dict = {}
                     polarity_dict['polarity'] = polarity
@@ -799,7 +799,7 @@ def gerbers_to_svg(manufacturer='default'):
                     tmp['number'] = line.aperture_change['number']
                     #if len(gerber_dict['features'][-1]['shapes'] == 0):
                     gerber_dict['features'][-1]['shapes'].append(tmp)
-                    #else:    
+                    #else:
                     #    gerber_dict['features'][-1]['shapes'].append(tmp)
 
                     tmp = {}
@@ -812,7 +812,7 @@ def gerbers_to_svg(manufacturer='default'):
                     tmp['type'] = 'fill'
                     tmp['segments'] = []
                     gerber_dict['features'][-1]['shapes'].append(tmp)
-                
+
                 elif line.move or line.draw or line.flash:
 
                     # TODO: hack alert! (Got to get shit done, you know? Don't judge me!)
@@ -825,7 +825,7 @@ def gerbers_to_svg(manufacturer='default'):
                     if line.flash:
                         command_name = 'flash'
                         item = line.flash
-                  
+
                     point = Point(normalise_gerber_number(item['x'], 'x', gerber_dict['format']), normalise_gerber_number(item['y'], 'y', gerber_dict['format']))
                     tmp = {}
                     tmp['type'] = command_name
@@ -906,7 +906,7 @@ def gerbers_to_svg(manufacturer='default'):
     # regardless of the source of the Gerbers, the PCBmodE directory
     # structure is assumed
     production_path = os.path.join(config.cfg['base-dir'],
-                                   config.cfg['locations']['build'], 
+                                   config.cfg['locations']['build'],
                                    'production')
 
     # get board information from configuration file
@@ -928,11 +928,11 @@ def gerbers_to_svg(manufacturer='default'):
         gerber_svg_layer.append(gerber_svg)
         print(foil)
 
-        
+
     #for pcb_layer in utils.getSurfaceLayers():
     for pcb_layer in config.stk['layer-names']:
         for foil in ['conductor', 'silkscreen', 'soldermask']:
-            gerber_file = os.path.join(production_path, 
+            gerber_file = os.path.join(production_path,
                                        base_name + '_%s_%s.ger'% (pcb_layer, foil))
             gerber_data = open(gerber_file, 'r').read()
             gerber_svg = create_gerber_svg_data(gerber_data)

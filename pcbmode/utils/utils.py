@@ -52,7 +52,7 @@ def openBoardSVG():
                             config.cfg['locations']['build'],
                             config.cfg['name'] + '.svg')
     try:
-        data = et.ElementTree(file=filename) 
+        data = et.ElementTree(file=filename)
     except IOError as e:
         msg.error("Cannot open %s; has the board been made using the '-m' option yet?" % filename)
 
@@ -119,8 +119,8 @@ def makePngs():
     """
 
     # Directory for storing the Gerbers within the build path
-    images_path = os.path.join(config.cfg['base-dir'], 
-                               config.cfg['locations']['build'], 
+    images_path = os.path.join(config.cfg['base-dir'],
+                               config.cfg['locations']['build'],
                                'images')
     # Create it if it doesn't exist
     create_dir(images_path)
@@ -129,18 +129,18 @@ def makePngs():
     png_dpi = 600
     msg.subInfo("Generating PNGs for each layer of the board")
 
-    command = ['inkscape', 
-               '--without-gui', 
-               '--file=%s' % os.path.join(config.cfg['base-dir'], 
-                                          config.cfg['locations']['build'], 
-                                          config.cfg['name'] + '.svg'), 
-               '--export-png=%s' % os.path.join(images_path, config.cfg['name'] + '_rev_' + 
+    command = ['inkscape',
+               '--without-gui',
+               '--file=%s' % os.path.join(config.cfg['base-dir'],
+                                          config.cfg['locations']['build'],
+                                          config.cfg['name'] + '.svg'),
+               '--export-png=%s' % os.path.join(images_path, config.cfg['name'] + '_rev_' +
                                                 config.brd['config']['rev'] +
                                                 '.png'),
                '--export-dpi=%s' % str(png_dpi),
                '--export-area-drawing',
                '--export-background=#FFFFFF']
-    
+
     try:
         subp.call(command)
     except OSError as e:
@@ -162,7 +162,7 @@ def dictFromJsonFile(filename, error=True):
         """
         Check if there are duplicate keys defined; this is useful
         for any hand-edited file
-  
+
         This SO answer was useful here:
           http://stackoverflow.com/questions/16172011/json-in-python-receive-check-duplicate-key-error
         """
@@ -208,7 +208,7 @@ def getSurfaceLayers():
     Returns a list of surface layer names
     Only here until this function is purged from the
     codebase
-    """    
+    """
     return config.stk['surface-layer-names']
 
 
@@ -219,7 +219,7 @@ def getInternalLayers():
     Returns a list of internal layer names
     Only here until this function is purged from the
     codebase
-    """    
+    """
     return config.stk['internal-layer-names']
 
 
@@ -235,7 +235,7 @@ def getExtendedLayerList(layers):
     """
     if 'internal' in layers:
         layers.remove('internal')
-        layers.extend(config.stk['internal-layer-names']) 
+        layers.extend(config.stk['internal-layer-names'])
     return layers
 
 
@@ -247,7 +247,7 @@ def getExtendedSheetList(layer, sheet):
     soldermask layers on the same physical layer. This function
     expands the list if such layers are defined in the stackup
     """
-    
+
     for layer_dict in config.stk['layers-dict']:
         if layer_dict['name'] == layer:
             break
@@ -272,7 +272,7 @@ def create_dir(path):
     """
     Checks if a directory exists, and creates one if not
     """
-    
+
     try:
         # try to create directory first; this prevents TOCTTOU-type race condition
         os.makedirs(path)
@@ -327,7 +327,7 @@ def process_meander_type(type_string, meander_type):
             meander[param] = float(tmp.group('v'))
 
     # add optional fields as 'None'
-    for param in look_for:    
+    for param in look_for:
         if meander.get(param) is None:
             meander[param] = None
 
@@ -353,7 +353,7 @@ def checkForPoursInLayer(layer):
             layers = getExtendedLayerList(pour_dict.get('layers'))
             if layer in layers:
                 return True
- 
+
     #return False
     return True
 
@@ -362,7 +362,7 @@ def checkForPoursInLayer(layer):
 
 def interpret_svg_matrix(matrix_data):
     """
-    Takes an array for six SVG parameters and returns angle, scale 
+    Takes an array for six SVG parameters and returns angle, scale
     and placement coordinate
 
     This SO answer was helpful here:
@@ -377,14 +377,14 @@ def interpret_svg_matrix(matrix_data):
         angle = math.degrees(0)
     else:
         angle = math.atan(matrix_data[2] / matrix_data[0])
-    
-    scale = Point(math.fabs(matrix_data[0] / math.cos(angle)), 
+
+    scale = Point(math.fabs(matrix_data[0] / math.cos(angle)),
                   math.fabs(matrix_data[3] / math.cos(angle)))
 
     # convert angle to degrees
     angle = math.degrees(angle)
 
-    # Inkscape rotates anti-clockwise, PCBmodE "thinks" clockwise. The following 
+    # Inkscape rotates anti-clockwise, PCBmodE "thinks" clockwise. The following
     # adjusts these two views, although at some point we'd
     # need to have the same view, or make it configurable
     angle = -angle
@@ -413,7 +413,7 @@ def parse_refdef(refdef):
         n = int(parse.group('n'))
         e = parse.group('e')
         return t, n, e
-    
+
 
 
 
@@ -460,10 +460,10 @@ def renumberRefdefs(order):
                reverse = False
                itemget_param = 'coord-y'
            else:
-               msg.error('Unrecognised renumbering order %s' % (order)) 
- 
-           sorted_list = sorted(comp_dict[comp_type], 
-                                key=itemgetter(itemget_param), 
+               msg.error('Unrecognised renumbering order %s' % (order))
+
+           sorted_list = sorted(comp_dict[comp_type],
+                                key=itemgetter(itemget_param),
                                 reverse=reverse)
 
 
@@ -472,21 +472,21 @@ def renumberRefdefs(order):
                if record['extra'] is not None:
                    new_refdef += "%s" % (record['extra'])
                new_dict[new_refdef] = record['record']
- 
+
     config.brd['components'] = new_dict
 
     # Save board config to file (everything is saved, not only the
     # component data)
-    filename = os.path.join(config.cfg['locations']['boards'], 
-                            config.cfg['name'], 
+    filename = os.path.join(config.cfg['locations']['boards'],
+                            config.cfg['name'],
                             config.cfg['name'] + '.json')
     try:
         with open(filename, 'wb') as f:
             f.write(json.dumps(config.brd, sort_keys=True, indent=2))
     except:
         msg.error("Cannot save file %s" % filename)
- 
- 
+
+
     return
 
 
@@ -510,7 +510,7 @@ def getTextParams(font_size, letter_spacing, line_height):
 
     if line_height_unit == None:
         line_height_unit = 'mm'
-    
+
     try:
         font_size, font_size_unit = parseDimension(font_size)
     except:
@@ -535,14 +535,14 @@ def textToPath(font_data, text, letter_spacing, line_height, scale_factor):
     # This the horizontal advance that applied to all glyphs unless there's a specification for
     # for the glyph itself
     font_horiz_adv_x = float(font_data.find("//n:font", namespaces={'n': config.cfg['namespace']['svg']}).get('horiz-adv-x'))
-    
+
     # This is the number if 'units' per 'em'. The default, in the absence of a definition is 1000
     # according to the SVG spec
     units_per_em = float(font_data.find("//n:font-face", namespaces={'n': config.cfg['namespace']['svg']}).get('units-per-em')) or 1000
 
     glyph_ascent = float(font_data.find("//n:font-face", namespaces={'n': config.cfg['namespace']['svg']}).get('ascent'))
     glyph_decent = float(font_data.find("//n:font-face", namespaces={'n': config.cfg['namespace']['svg']}).get('descent'))
- 
+
     text_width = 0
     text_path = ''
 
@@ -551,7 +551,7 @@ def textToPath(font_data, text, letter_spacing, line_height, scale_factor):
         text = re.findall(r'(\&#x[0-9abcdef]*;|.|\n)', text)
     except:
         throw("There's a problem parsing the text '%s'. Unicode and \\n newline should be fine, by the way." % text)
- 
+
 
     # instantiate HTML parser
     htmlpar = HTMLParser.HTMLParser()
@@ -582,15 +582,15 @@ def textToPath(font_data, text, letter_spacing, line_height, scale_factor):
                     offset_y = float(first_point[1])
                     path = glyph_path.getRelative()
                     path = re.sub('^(m\s?[-\d\.]+\s?,\s?[-\d\.]+)', 'M %s,%s' % (str(text_width+offset_x), str(offset_y-text_height)), path)
-                    gerber_lp += (glyph.get('gerber-lp') or 
-                                  glyph.get('gerber_lp') or 
+                    gerber_lp += (glyph.get('gerber-lp') or
+                                  glyph.get('gerber_lp') or
                                   "%s" % 'd'*glyph_path.getNumberOfSegments())
                     text_path += "%s " % (path)
 
             text_width += glyph_width+letter_spacing/scale_factor
 
 
-    # Mirror text 
+    # Mirror text
     text_path = SvgPath(text_path)
     text_path.transform()
     text_path = text_path.getTransformedMirrored()
@@ -655,7 +655,7 @@ def parseTransform(transform):
     else:
         msg.error("Found a path transform that cannot be handled, %s. SVG stansforms should be in the form of 'translate(num,num)' or 'matrix(num,num,num,num,num,num)" % transform)
 
-    return data 
+    return data
 
 
 
@@ -663,7 +663,7 @@ def parseTransform(transform):
 
 def parseSvgMatrix(matrix):
     """
-    Takes an array for six SVG parameters and returns angle, scale 
+    Takes an array for six SVG parameters and returns angle, scale
     and placement coordinate
 
     This SO answer was helpful here:
@@ -682,18 +682,18 @@ def parseSvgMatrix(matrix):
         angle = math.degrees(0)
     else:
         angle = math.atan(matrix[2] / matrix[0])
-    
-    #scale = Point(math.fabs(matrix[0] / math.cos(angle)), 
+
+    #scale = Point(math.fabs(matrix[0] / math.cos(angle)),
     #              math.fabs(matrix[3] / math.cos(angle)))
     scale_x = math.sqrt(matrix[0]*matrix[0] + matrix[1]*matrix[1]),
-    scale_y = math.sqrt(matrix[2]*matrix[2] + matrix[3]*matrix[3]),    
+    scale_y = math.sqrt(matrix[2]*matrix[2] + matrix[3]*matrix[3]),
 
     scale = max(scale_x, scale_y)[0]
 
     # convert angle to degrees
     angle = math.degrees(angle)
 
-    # Inkscape rotates anti-clockwise, PCBmodE "thinks" clockwise. The following 
+    # Inkscape rotates anti-clockwise, PCBmodE "thinks" clockwise. The following
     # adjusts these two views, although at some point we'd
     # need to have the same view, or make it configurable
     angle = -angle

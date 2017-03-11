@@ -106,7 +106,7 @@ class Shape():
             lh = self._shape_dict.get('line-height') or fs
 
             font_size, letter_spacing, line_height = utils.getTextParams(fs,
-                                                                         ls, 
+                                                                         ls,
                                                                          lh)
 
             # With the units-per-em we can figure out the scale factor
@@ -122,7 +122,7 @@ class Shape():
                                                letter_spacing,
                                                line_height,
                                                self._scale)
-           
+
             # In the case where the text is an outline/stroke instead
             # of a fill we get rid of the gerber_lp
             if self._shape_dict.get('style') == 'stroke':
@@ -138,14 +138,14 @@ class Shape():
 
         self._path = SvgPath(path, gerber_lp)
 
-        self._path.transform(scale=self._scale, 
-                             rotate_angle=self._rotate, 
-                             rotate_point=self._rotate_point, 
+        self._path.transform(scale=self._scale,
+                             rotate_angle=self._rotate,
+                             rotate_point=self._rotate_point,
                              mirror=self._place_mirrored)
 
-        self._gerber_lp = (shape.get('gerber-lp') or 
-                           shape.get('gerber_lp') or 
-                           gerber_lp or 
+        self._gerber_lp = (shape.get('gerber-lp') or
+                           shape.get('gerber_lp') or
+                           gerber_lp or
                            None)
 
         self._location = utils.toPoint(shape.get('location', [0, 0]))
@@ -245,7 +245,7 @@ class Shape():
     def getLocation(self):
         return self._location
 
-  
+
     def setLocation(self, location):
         self._location = location
 
@@ -257,7 +257,7 @@ class Shape():
     def getPourBuffer(self):
         return self._pour_buffer
 
-     
+
     def getType(self):
         return self._type
 

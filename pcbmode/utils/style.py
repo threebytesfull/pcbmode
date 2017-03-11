@@ -45,7 +45,7 @@ class Style():
             self._style_dict = layer_style.get(self._style).copy()
         except:
             self._style_dict = None
-            
+
         # Apply defaults if style dict wasn't found
         if self._style_dict == None:
             if self._style == 'fill':
@@ -55,7 +55,7 @@ class Style():
             else:
                 msg.error("Encountered an unknown 'style' type, %s" % self._style)
 
-        # If the style is 'stroke' we need to override the default 'stroke-width' 
+        # If the style is 'stroke' we need to override the default 'stroke-width'
         # setting with a possible custom definition
         if self._style == 'stroke':
             self._style_dict['stroke-width'] = (shape_dict.get('stroke-width') or

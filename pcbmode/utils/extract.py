@@ -22,13 +22,13 @@ def extract(extract, extract_refdefs):
     if extract == True:
         msg.info("Extracting routing and vias")
         extractRouting(svg_in)
-     
+
         msg.info("Extracting components info")
         extractComponents(svg_in)
-     
+
         msg.info("Extracting documentation and indicies locations")
         extractDocs(svg_in)
-    
+
     if extract_refdefs == True:
         msg.info("Extracting refdefs info")
         extractRefdefs(svg_in)
@@ -42,17 +42,17 @@ def extract(extract, extract_refdefs):
 def extractComponents(svg_in):
     """
     """
-    
+
     xpath_expr_place = '//svg:g[@pcbmode:pcb-layer="%s"]//svg:g[@pcbmode:sheet="placement"]//svg:g[@pcbmode:type="%s"]'
 
     for pcb_layer in config.stk['surface-layer-names']:
-        
+
         # Find all 'component' markers
-        markers = svg_in.findall(xpath_expr_place % (pcb_layer, 'component'), 
+        markers = svg_in.findall(xpath_expr_place % (pcb_layer, 'component'),
                                  namespaces={'pcbmode':config.cfg['ns']['pcbmode'],
                                              'svg':config.cfg['ns']['svg']})
         # Find all 'shape' markers
-        markers += svg_in.findall(xpath_expr_place % (pcb_layer, 'shape'), 
+        markers += svg_in.findall(xpath_expr_place % (pcb_layer, 'shape'),
                                   namespaces={'pcbmode':config.cfg['ns']['pcbmode'],
                                               'svg':config.cfg['ns']['svg']})
 
@@ -61,7 +61,7 @@ def extractComponents(svg_in):
             transform_data = utils.parseTransform(marker.get('transform'))
             refdef = marker.get('{'+config.cfg['ns']['pcbmode']+'}refdef')
             marker_type = marker.get('{'+config.cfg['ns']['pcbmode']+'}type')
-            
+
             if marker_type == 'component':
                 comp_dict = config.brd['components'][refdef]
             elif marker_type == 'shape':
@@ -90,22 +90,22 @@ def extractComponents(svg_in):
                 old_rotate = comp_dict.get('rotate') or 0
                 new_rotate = transform_data['rotate']
                 comp_dict['rotate'] = utils.niceFloat((old_rotate+new_rotate) % 360)
-                msg.subInfo("Component %s rotated from %s to %s" % (refdef, 
-                                                                    old_rotate, 
+                msg.subInfo("Component %s rotated from %s to %s" % (refdef,
+                                                                    old_rotate,
                                                                     comp_dict['rotate']))
 
 
     # Save board config to file (everything is saved, not only the
     # component data)
-    filename = os.path.join(config.cfg['locations']['boards'], 
-                            config.cfg['name'], 
+    filename = os.path.join(config.cfg['locations']['boards'],
+                            config.cfg['name'],
                             config.cfg['name'] + '.json')
     try:
         with open(filename, 'wb') as f:
             f.write(json.dumps(config.brd, sort_keys=True, indent=2))
     except:
         msg.error("Cannot save file %s" % filename)
- 
+
     return
 
 
@@ -118,12 +118,12 @@ def extractRefdefs(svg_in):
     """
 
     xpath_refdefs = '//svg:g[@pcbmode:sheet="silkscreen"]//svg:g[@pcbmode:type="refdef"]'
-    refdefs_elements = svg_in.findall(xpath_refdefs, 
+    refdefs_elements = svg_in.findall(xpath_refdefs,
                              namespaces={'pcbmode':config.cfg['ns']['pcbmode'],
                                          'svg':config.cfg['ns']['svg']})
 
     for refdef_element in refdefs_elements:
- 
+
         # Get refdef group location
         group_trans_data = utils.parseTransform(refdef_element.get('transform'))
         group_loc = group_trans_data['location']
@@ -149,7 +149,7 @@ def extractRefdefs(svg_in):
 
             # Get component placement layer
             comp_layer = refdef_dict.get('layer', 'top')
-     
+
             # Get component rotation
             comp_rotation = refdef_dict.get('rotate', 0)
 
@@ -165,28 +165,28 @@ def extractRefdefs(svg_in):
                 tmp = refdef_dict['silkscreen']
             except:
                 refdef_dict['silkscreen'] = {}
- 
+
             try:
                 tmp = refdef_dict['silkscreen']['refdef']
             except:
                 refdef_dict['silkscreen']['refdef'] = {}
- 
+
             x = utils.niceFloat(loc_new.x)
             y = utils.niceFloat(loc_new.y)
-            refdef_dict['silkscreen']['refdef']['location'] = [x,y] 
+            refdef_dict['silkscreen']['refdef']['location'] = [x,y]
 
 
     # Save board config to file (everything is saved, not only the
     # component data)
-    filename = os.path.join(config.cfg['locations']['boards'], 
-                            config.cfg['name'], 
+    filename = os.path.join(config.cfg['locations']['boards'],
+                            config.cfg['name'],
                             config.cfg['name'] + '.json')
     try:
         with open(filename, 'wb') as f:
             f.write(json.dumps(config.brd, sort_keys=True, indent=2))
     except:
         msg.error("Cannot save file %s" % filename)
- 
+
     return
 
 
@@ -207,7 +207,7 @@ def extractRouting(svg_in):
     try:
         routing_dict_old = utils.dictFromJsonFile(output_file, False)
     except:
-        routing_dict_old = {'routes': {}, 'vias': {}} 
+        routing_dict_old = {'routes': {}, 'vias': {}}
 
     #---------------
     # Extract routes
@@ -222,8 +222,8 @@ def extractRouting(svg_in):
     routes_dict = {}
 
     for pcb_layer in config.stk['layer-names']:
-        routes = svg_in.xpath(xpath_expr % pcb_layer, 
-                              namespaces={'pcbmode':config.cfg['ns']['pcbmode'], 
+        routes = svg_in.xpath(xpath_expr % pcb_layer,
+                              namespaces={'pcbmode':config.cfg['ns']['pcbmode'],
                                           'svg':config.cfg['ns']['svg']})
 
         for route in routes:
@@ -232,7 +232,7 @@ def extractRouting(svg_in):
             path = route.get('d')
 
             style_text = route.get('style') or ''
-            
+
             # This hash digest provides a unique identifier for
             # the route based on its path, location, and style
             digest = utils.digest(path+
@@ -250,7 +250,7 @@ def extractRouting(svg_in):
 
             stroke_width = utils.getStyleAttrib(style_text, 'stroke-width')
             if stroke_width != None:
-                # Sometimes Inkscape will add a 'px' suffix to the stroke-width 
+                # Sometimes Inkscape will add a 'px' suffix to the stroke-width
                 #property pf a path; this removes it
                 stroke_width = stroke_width.rstrip('px')
                 routes_dict[pcb_layer][digest]['style'] = 'stroke'
@@ -310,9 +310,9 @@ def extractRouting(svg_in):
     vias_dict = {}
 
     for pcb_layer in config.stk['surface-layer-names']:
-        
+
         # Find all markers
-        markers = svg_in.findall(xpath_expr_place % pcb_layer, 
+        markers = svg_in.findall(xpath_expr_place % pcb_layer,
                                  namespaces={'pcbmode':config.cfg['ns']['pcbmode'],
                                              'svg':config.cfg['ns']['svg']})
 
@@ -328,7 +328,7 @@ def extractRouting(svg_in):
                 rotate = utils.niceFloat((rotate) % 360)
             else:
                 rotate = 0
-                
+
             digest = utils.digest("%s%s" % (location.x, location.y))
 
             # Define a via, just like any other component, but disable
@@ -356,7 +356,7 @@ def extractRouting(svg_in):
                     old_via_rotate = 0
 
                 vias_dict[digest]['rotate'] = old_via_rotate + rotate
-            
+
 
 
 
@@ -369,7 +369,7 @@ def extractRouting(svg_in):
         msg.subInfo("Extracted 1 via")
     else:
         msg.subInfo("Extracted %s vias" % (len(vias_dict)))
-    
+
 
     # Save extracted routing into routing file
     try:
@@ -393,11 +393,11 @@ def extractDocs(svg_in):
 
     # Get copper refdef shape groups from SVG data
     xpath_expr = '//svg:g[@pcbmode:sheet="documentation"]//svg:g[@pcbmode:type="module-shapes"]'
-    docs = svg_in.findall(xpath_expr, 
+    docs = svg_in.findall(xpath_expr,
                           namespaces={'pcbmode':config.cfg['ns']['pcbmode'],
                                       'svg':config.cfg['ns']['svg']})
 
-    
+
     for doc in docs:
         doc_key = doc.get('{'+config.cfg['ns']['pcbmode']+'}doc-key')
         translate_data = utils.parseTransform(doc.get('transform'))
@@ -406,31 +406,31 @@ def extractDocs(svg_in):
 
         current_location = utils.toPoint(config.brd['documentation'][doc_key]['location'])
         if current_location != location:
-            config.brd['documentation'][doc_key]['location'] = [location.x, location.y] 
+            config.brd['documentation'][doc_key]['location'] = [location.x, location.y]
             msg.subInfo("Found new location ([%s, %s]) for '%s'" % (location.x, location.y, doc_key))
 
 
     # Extract drill index location
     xpath_expr = '//svg:g[@pcbmode:sheet="drills"]//svg:g[@pcbmode:type="drill-index"]'
-    drill_index = svg_in.find(xpath_expr, 
+    drill_index = svg_in.find(xpath_expr,
                               namespaces={'pcbmode':config.cfg['ns']['pcbmode'],
-                                          'svg':config.cfg['ns']['svg']})    
+                                          'svg':config.cfg['ns']['svg']})
     transform_dict = utils.parseTransform(drill_index.get('transform'))
     location = transform_dict['location']
     location.y *= config.cfg['invert-y']
 
     # Modify the location in the board's config file. If a
     # 'drill-index' field doesn't exist, create it
-    drill_index_dict = config.brd.get('drill-index') 
+    drill_index_dict = config.brd.get('drill-index')
     if drill_index_dict == None:
         config.brd['drill-index'] = {}
     config.brd['drill-index']['location'] = [location.x, location.y]
 
-        
+
     # Save board config to file (everything is saved, not only the
     # component data)
-    filename = os.path.join(config.cfg['locations']['boards'], 
-                            config.cfg['name'], 
+    filename = os.path.join(config.cfg['locations']['boards'],
+                            config.cfg['name'],
                             config.cfg['name'] + '.json')
     try:
         with open(filename, 'wb') as f:

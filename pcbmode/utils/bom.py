@@ -12,7 +12,7 @@ from . import messages as msg
 
 def make_bom(quantity=None):
     """
-    
+
     """
 
     def natural_key(string_):
@@ -20,12 +20,12 @@ def make_bom(quantity=None):
         return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', string_)]
 
 
-     
+
     dnp_text = 'Do not populate'
     uncateg_text = 'Uncategorised'
 
     components_dict = config.brd['components']
-    
+
     bom_dict = {}
 
     for refdef in components_dict:
@@ -50,26 +50,26 @@ def make_bom(quantity=None):
                 footprint_name = components_dict[refdef]['footprint']
             except:
                 msg.error("Cannot find a 'footprint' name for refdef %s." % refdef)
-            
+
             # Open footprint file
             fname = os.path.join(config.cfg['base-dir'],
                                  config.cfg['locations']['components'],
                                  footprint_name + '.json')
             footprint_dict = utils.dictFromJsonFile(fname)
- 
+
             info_dict = footprint_dict.get('info') or {}
- 
-            try: 
+
+            try:
                 comp_bom_dict = components_dict[refdef]['bom']
             except:
                 comp_bom_dict = {}
- 
-            try: 
+
+            try:
                 fp_bom_dict = footprint_dict['info']
             except:
                 fp_bom_dict = {}
- 
- 
+
+
             # Override component BoM info on top of footprint info
             for key in comp_bom_dict:
                 fp_bom_dict[key] = comp_bom_dict[key]
@@ -79,16 +79,16 @@ def make_bom(quantity=None):
             try:
                 dnp = components_dict[refdef]['bom']['dnp']
             except:
-                dnp = False            
+                dnp = False
 
             if dnp == True:
                 description = dnp_text
- 
+
             if description not in bom_dict:
                 bom_dict[description] = fp_bom_dict
                 bom_dict[description]['refdefs'] = []
             bom_dict[description]['refdefs'].append(refdef)
-    
+
 
     try:
         bom_content = config.brd['bom']
@@ -105,19 +105,19 @@ def make_bom(quantity=None):
             {
               "field": "designators",
                "text": "Designators"
-            }, 
+            },
             {
               "field": "description",
               "text": "Description"
-            }, 
+            },
             {
               "field": "package",
               "text": "Package"
-            }, 
+            },
             {
               "field": "manufacturer",
               "text": "Manufacturer"
-            }, 
+            },
             {
               "field": "part-number",
               "text": "Part #"
@@ -125,14 +125,14 @@ def make_bom(quantity=None):
             {
               "field": "suppliers",
               "text": "Suppliers",
-              "suppliers": 
+              "suppliers":
               [
                 {
                   "field": "farnell",
                   "text": "Farnell #",
                   "search-url": "http://uk.farnell.com/catalog/Search?st="
                 },
-                { 
+                {
                   "field": "mouser",
                   "text": "Mouser #",
                   "search-url": "http://uk.mouser.com/Search/Refine.aspx?Keyword="
@@ -194,7 +194,7 @@ def make_bom(quantity=None):
 
     html.append('  <tr>')
     html.append('    <th class="tg-title" colspan="%s">Bill of materials -- %s rev %s</th>' % (len(header), board_name, board_revision))
-    html.append('  </tr>') 
+    html.append('  </tr>')
     html.append('  <tr>')
     for item in header:
         if item == 'Designators':
@@ -202,7 +202,7 @@ def make_bom(quantity=None):
         else:
             html.append('    <th class="tg-header">%s</th>' % item)
     html.append('  </tr>')
-    
+
     uncateg_content = []
     dnp_content = []
     index = 1
@@ -268,7 +268,7 @@ def make_bom(quantity=None):
 
     for content in (dnp_content, uncateg_content):
         html.append('  <tr class="tg-skip">')
-        html.append('  </tr>')        
+        html.append('  </tr>')
         html.append('  <tr>')
         if len(content) > 0:
             content[0] = index
@@ -288,7 +288,7 @@ def make_bom(quantity=None):
         for line in html:
             f.write(line+'\n')
 
-    
+
     #print bom_dict
 
 

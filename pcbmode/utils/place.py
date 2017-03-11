@@ -43,7 +43,7 @@ def placeShape(shape, svg_layer, invert=False, original=False):
         else:
             path = shape.getTransformedPath()
 
-    element = et.SubElement(svg_layer, 
+    element = et.SubElement(svg_layer,
                             'path',
                             d=path)
     # Set style string
@@ -69,11 +69,11 @@ def placeShape(shape, svg_layer, invert=False, original=False):
 
 
 
-def placeDrill(drill, 
-               layer, 
-               location, 
-               scale, 
-               soldermask_layers={}, 
+def placeDrill(drill,
+               layer,
+               location,
+               scale,
+               soldermask_layers={},
                mask_groups={}):
     """
     Places the drilling point
@@ -142,24 +142,24 @@ def placeDrill(drill,
         path_bottom = svg.circle_diameter_to_path(diameter * drill_soldermask_scale_factors['bottom'])
 
         if add_soldermask.lower() == 'yes' or add_soldermask.lower() == 'top and bottom':
-            drill_element = et.SubElement(soldermask_layers['top'], 
+            drill_element = et.SubElement(soldermask_layers['top'],
                                           'path',
                                           transform=transform,
                                           style=style,
                                           d=path_top)
-            drill_element = et.SubElement(soldermask_layers['bottom'], 
+            drill_element = et.SubElement(soldermask_layers['bottom'],
                                           'path',
                                           transform=transform,
                                           style=style,
                                           d=path_bottom)
         elif add_soldermask.lower() == 'top only' or add_soldermask.lower() == 'top':
-            drill_element = et.SubElement(soldermask_layers['top'], 
+            drill_element = et.SubElement(soldermask_layers['top'],
                                           'path',
                                           transform=transform,
                                           style=style,
                                           d=path_top)
         elif add_soldermask.lower() == 'bottom only' or add_soldermask.lower() == 'bottom':
-            drill_element = et.SubElement(soldermask_layers['bottom'], 
+            drill_element = et.SubElement(soldermask_layers['bottom'],
                                           'path',
                                           transform=transform,
                                           style=style,
