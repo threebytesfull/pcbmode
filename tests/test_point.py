@@ -1,6 +1,7 @@
 import unittest
 
 from pcbmode.utils.point import Point
+from pcbmode.config import Config
 
 class TestPoint(unittest.TestCase):
     """Test Point class"""
@@ -9,6 +10,7 @@ class TestPoint(unittest.TestCase):
         self.p0 = Point(3, 4)
         self.p1 = Point(4/3, 5.001)
         self.p2 = Point(-1/12, 0)
+        self.c = Config(clean=True)
 
     # Tests for __init__
     def test_point_with_no_coordinates(self):
@@ -44,14 +46,12 @@ class TestPoint(unittest.TestCase):
     # Tests for __add__
     def test_add_points(self):
         p3 = self.p1 + self.p2
-        self.assertEqual(p3.x, self.p1.x + self.p2.x, 'should add x coords correctly')
-        self.assertEqual(p3.y, self.p1.y + self.p2.y, 'should add y coords correctly')
+        self.assertEqual(p3, Point(self.p1.x + self.p2.x, self.p1.y + self.p2.y), 'should add points correctly')
 
     # Tests for __sub__
     def test_sub_points(self):
         p3 = self.p1 - self.p2
-        self.assertEqual(p3.x, self.p1.x - self.p2.x, 'should sub x coords correctly')
-        self.assertEqual(p3.y, self.p1.y - self.p2.y, 'should sub y coords correctly')
+        self.assertEqual(p3, Point(self.p1.x - self.p2.x, self.p1.y - self.p2.y), 'should sub points correctly')
 
     # Tests for __repr__
     def test_string_representation(self):
@@ -209,7 +209,38 @@ class TestPoint(unittest.TestCase):
 
         x, y = self.p2.x, self.p2.y
         self.p2.mult(3.7)
-        self.assertEqual(self.p2, Point(x*3.7, y*3.7), 'should multiply point by positive floating point')
+        self.assertAlmostEqual(self.p2.x, x*3.7, 'should multiply point x coordinate by positive floating point')
+        self.assertAlmostEqual(self.p2.y, y*3.7, 'should multiply point y coordinate by positive floating point')
+
+    # Tests for significant digits handling
+    def test_default_significant_digits(self):
+        # ensure there's not significant-digits setting
+        try:
+            del self.c.cfg['significant-digits']
+        except KeyError:
+            pass
+        expected_default_digits = 8
+        for sign in (-1, 1):
+            with self.subTest(sign=sign):
+                x = sign * 1.234567891234
+                y = sign * 2.345678912345
+                p = Point(x, y)
+                # we expect to round to 8 decimal places by default
+                self.assertEqual(p.x, round(x, expected_default_digits))
+                self.assertEqual(p.y, round(y, expected_default_digits))
+
+    def test_significant_digits(self):
+        c = Config(clean=True)
+        for sign in (-1, 1):
+            with self.subTest(sign=sign):
+                x = sign * 1.234567891234
+                y = sign * 2.345678912345
+                for sig_dig in range(10):
+                    with self.subTest(sig_dig=sig_dig):
+                        c.cfg['significant-digits'] = sig_dig
+                        p = Point(x, y)
+                        self.assertEqual(p.x, round(x, sig_dig), 'should get correctly rounded x coordinate')
+                        self.assertEqual(p.y, round(y, sig_dig), 'should get correctly rounded y coordinate')
 
 if __name__ == '__main__': # pragma: no cover
     unittest.main()
