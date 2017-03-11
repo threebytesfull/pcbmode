@@ -7,10 +7,10 @@ class TestPoint(unittest.TestCase):
     """Test Point class"""
 
     def setUp(self):
+        self.c = Config(clean=True)
         self.p0 = Point(3, 4)
         self.p1 = Point(4/3, 5.001)
         self.p2 = Point(-1/12, 0)
-        self.c = Config(clean=True)
 
     # Tests for __init__
     def test_point_with_no_coordinates(self):
@@ -230,14 +230,13 @@ class TestPoint(unittest.TestCase):
                 self.assertEqual(p.y, round(y, expected_default_digits))
 
     def test_significant_digits(self):
-        c = Config(clean=True)
         for sign in (-1, 1):
             with self.subTest(sign=sign):
                 x = sign * 1.234567891234
                 y = sign * 2.345678912345
                 for sig_dig in range(10):
                     with self.subTest(sig_dig=sig_dig):
-                        c.cfg['significant-digits'] = sig_dig
+                        self.c.cfg['significant-digits'] = sig_dig
                         p = Point(x, y)
                         self.assertEqual(p.x, round(x, sig_dig), 'should get correctly rounded x coordinate')
                         self.assertEqual(p.y, round(y, sig_dig), 'should get correctly rounded y coordinate')

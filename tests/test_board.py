@@ -7,6 +7,9 @@ from pcbmode.config import Config
 class TestBoard(unittest.TestCase):
     """Test pcbmode script"""
 
+    def setUp(self):
+        self.c = Config(clean=True)
+
     @patch('pcbmode.utils.board.Module')
     def test_board_instantiates_module(self, mock_module):
         """
@@ -19,6 +22,5 @@ class TestBoard(unittest.TestCase):
         self.assertTrue(hasattr(board, '_module_dict'), 'board should have protected module_dict attribute')
         self.assertTrue(hasattr(board, '_module_routing'), 'board should have protected module_routing attribute')
 
-        c = Config()
-        self.assertIs(board._module_dict, c.get('brd'), 'module_dict attribute should be same object as config.brd')
-        self.assertIs(board._module_routing, c.get('rte'), 'module_routing attribute should be same object as config.rte')
+        self.assertIs(board._module_dict, self.c.get('brd'), 'module_dict attribute should be same object as config.brd')
+        self.assertIs(board._module_routing, self.c.get('rte'), 'module_routing attribute should be same object as config.rte')
