@@ -13,6 +13,7 @@ from pkg_resources import resource_filename, resource_exists
 
 # PCBmodE modules
 from . import config
+from pcbmode.config import Config
 from .utils import utils
 from .utils import gerber
 from .utils import extract
