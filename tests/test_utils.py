@@ -8,6 +8,9 @@ from pcbmode.config import Config
 class TestUtils(TestCase):
     """Test utils class"""
 
+    def setUp(self):
+        self.c = Config(clean=True)
+
     # dictToStyleText tests
     def test_style_string_from_empty_dictionary(self):
         style = utils.dictToStyleText({})
@@ -118,20 +121,63 @@ class TestUtils(TestCase):
         pass
 
     # getLayerList tests
-    def test_getLayerList(self):
-        pass
+    def test_getLayerList_returns_2_layer_signal_layers(self):
+        self.c.load_defaults()
+        layer_list, layer_names = utils.getLayerList()
+        self.assertEqual(len(layer_list), 2, 'should get details of two signal layers')
+        self.assertEqual(layer_names, 'top bottom'.split(), 'should get two expected signal layers')
+        self.assertEqual([layer['name'] for layer in layer_list], layer_names, 'names from layer list should match layer names returned')
+
+    @patch('pcbmode.config.Config._default_stackup_name', 'four-layer')
+    def test_getLayerList_returns_4_layer_signal_layers(self):
+        self.c.load_defaults()
+        layer_list, layer_names = utils.getLayerList()
+        self.assertEqual(len(layer_list), 4, 'should get details of four signal layers')
+        self.assertEqual(layer_names, 'top internal-1 internal-2 bottom'.split(), 'should get four expected signal layers')
+        self.assertEqual([layer['name'] for layer in layer_list], layer_names, 'names from layer list should match layer names returned')
 
     # def getSurfaceLayers tests
-    def test_getSurfaceLayers(self):
-        pass
+    def test_getSurfaceLayers_returns_layers_of_2(self):
+        self.c.load_defaults()
+        surface_layers = utils.getSurfaceLayers()
+        self.assertEqual(len(surface_layers), 2, 'should get details of two surface layers')
+        self.assertEqual(surface_layers, 'top bottom'.split(), 'names from layer list should match layer names returned')
+
+    @patch('pcbmode.config.Config._default_stackup_name', 'four-layer')
+    def test_getSurfaceLayers_returns_outer_layers_of_4(self):
+        self.c.load_defaults()
+        surface_layers = utils.getSurfaceLayers()
+        self.assertEqual(len(surface_layers), 2, 'should get details of two surface layers')
+        self.assertEqual(surface_layers, 'top bottom'.split(), 'names from layer list should match layer names returned')
 
     # getInternalLayers tests
-    def test_getInternalLayers(self):
-        pass
+    def test_getInternalLayers_of_2(self):
+        self.c.load_defaults()
+        internal_layers = utils.getInternalLayers()
+        self.assertEqual(len(internal_layers), 0, 'should get details of no internal layers')
+
+    @patch('pcbmode.config.Config._default_stackup_name', 'four-layer')
+    def test_getInternalLayers_of_4(self):
+        self.c.load_defaults()
+        internal_layers = utils.getInternalLayers()
+        self.assertEqual(len(internal_layers), 2, 'should get details of two internal layers')
+        self.assertEqual(internal_layers, 'internal-1 internal-2'.split(), 'names from layer list should match layer names returned')
 
     # getExtendedLayerList tests
-    def test_getExtendedLayerList(self):
-        pass
+    def test_getExtendedLayerList_2_layer(self):
+        self.c.load_defaults()
+        layers = utils.getExtendedLayerList('top bottom'.split())
+        self.assertEqual(layers, 'top bottom'.split(), 'should not add internal layers when internal not specified')
+        layers = utils.getExtendedLayerList('top internal bottom'.split())
+        self.assertEqual(layers, 'top bottom'.split(), 'should not add internal layers in a 2-layer board')
+
+    @patch('pcbmode.config.Config._default_stackup_name', 'four-layer')
+    def test_getExtendedLayerList_4_layer(self):
+        self.c.load_defaults()
+        layers = utils.getExtendedLayerList('top bottom'.split())
+        self.assertEqual(layers, 'top bottom'.split(), 'should not add internal layers when internal not specified')
+        layers = utils.getExtendedLayerList('top internal bottom'.split())
+        self.assertEqual(layers, 'top bottom internal-1 internal-2'.split(), 'should expand internal layers in a 4-layer board')
 
     # getExtendedSheetList tests
     def test_getExtendedSheetList(self):
@@ -224,8 +270,7 @@ class TestUtils(TestCase):
         output_hash = '2dc7e7def877f609c8532c01a2a357ae'
         for num_chars in range(1, 33):
             with self.subTest(num_chars=num_chars):
-                config = Config()
-                config.cfg['digest-digits'] = num_chars
+                self.c.cfg['digest-digits'] = num_chars
                 output = utils.digest(input_string)
                 # FIXME: this is probably a bug - the length is always one less than the configured digest-digits
                 self.assertEqual(output, output_hash[:num_chars-1], 'should get correct {} character digest hash'.format(num_chars))

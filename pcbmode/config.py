@@ -162,6 +162,19 @@ class Config(object):
         stackup_resource_path = resource_filename('pcbmode', os.path.join('stackups', self._default_stackup_name + '.json'))
         stk = pcbmode.utils.json.dictFromJsonFile(stackup_resource_path)
 
+        # precalculate some layer details
+        stk['layers-dict'], stk['layer-names'] = self.getLayerList()
+
+        try:
+            stk['surface-layers'] = [stk['layers-dict'][0], stk['layers-dict'][-1]]
+        except IndexError:
+            stk['surface-layers'] = []
+
+        stk['internal-layers'] = stk['layers-dict'][1:-1]
+
+        stk['surface-layer-names'] = [layer['name'] for layer in stk['surface-layers']]
+        stk['internal-layer-names'] = [layer['name'] for layer in stk['internal-layers']]
+
         # TODO: set base-dir, name, version, digest-digits
 
         # TODO: read brd data from board's config file

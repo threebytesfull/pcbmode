@@ -183,3 +183,18 @@ class TestConfig(unittest.TestCase):
         self.c.load_defaults()
         e.assert_called_once()
         self.assertRegex(e.call_args[0][0], r"Couldn't open JSON file:")
+
+    def test_stackup_load_sets_layers_dict(self):
+        self.assertFalse('layers-dict' in self.c.stk.keys())
+        self.c.load_defaults()
+        self.assertTrue('layers-dict' in self.c.stk.keys())
+
+    def test_stackup_load_sets_layer_names(self):
+        self.assertFalse('layer-names' in self.c.stk.keys())
+        self.c.load_defaults()
+        self.assertTrue('layer-names' in self.c.stk.keys())
+
+    def test_stackup_load_sets_surface_layers(self):
+        self.assertFalse('surface-layer-names' in self.c.stk.keys())
+        self.c.load_defaults()
+        self.assertTrue('surface-layer-names' in self.c.stk.keys())
