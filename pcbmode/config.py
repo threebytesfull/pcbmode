@@ -124,6 +124,14 @@ class Config(object):
     def global_config_path(self):
         return resource_filename('pcbmode', self._default_config_filename)
 
+    def getLayerList(self):
+        global stk
+
+        layer_list = [layer for layer in stk.get('stackup', []) if layer['type'] in ['signal-layer-surface', 'signal-layer-internal']]
+        layer_names = [layer['name'] for layer in layer_list]
+
+        return layer_list, layer_names
+
     def load_defaults(self, filename=None):
         global cfg, stl, stk
         if filename is None:
