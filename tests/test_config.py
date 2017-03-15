@@ -160,3 +160,26 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(self.c.get('cfg', 'locations', 'build'), 'some_build_directory', 'locations.build should be set')
         path = self.c.path_in_location('build', 'some_intermediate_dir', 'another_intermediate_dir', 'test.svg', absolute=True)
         self.assertEqual(path, os.path.join(os.getcwd(), 'some_base_dir', 'some_build_directory', 'some_intermediate_dir', 'another_intermediate_dir', 'test.svg'), 'should get expected file path')
+
+    def test_load_default_stackup(self):
+        self.assertEqual(self.c.stk, {}, 'should start with empty stackup data')
+        self.c.load_defaults()
+        self.assertNotEqual(self.c.stk, {}, 'stackup data should not be empty after load_defaults')
+        layer_names = [layer['name'] for layer in self.c.get('stk', 'stackup')]
+        self.assertEqual(layer_names, ['top', 'insulator', 'bottom'], 'should get expected layer names for 2-layer stackup')
+
+    @patch('pcbmode.config.Config._default_stackup_name', 'four-layer')
+    def test_stackup_uses_global_default(self):
+        self.assertEqual(self.c.stk, {}, 'should start with empty stackup data')
+        self.c.load_defaults()
+        self.assertNotEqual(self.c.stk, {}, 'stackup data should not be empty after load_defaults')
+        layer_names = [layer['name'] for layer in self.c.get('stk', 'stackup')]
+        self.assertEqual(layer_names, 'top insulator internal-1 insulator internal-2 insulator bottom'.split(), 'should get expected layer names for 4-layer stackup')
+
+    @patch('pcbmode.utils.messages.error')
+    @patch('pcbmode.config.Config._default_stackup_name', 'no-such-stackup')
+    def test_stackup_raises_error_on_missing_stackup(self, e):
+        self.assertEqual(self.c.stk, {}, 'should start with empty stackup data')
+        self.c.load_defaults()
+        e.assert_called_once()
+        self.assertRegex(e.call_args[0][0], r"Couldn't open JSON file:")

@@ -125,7 +125,7 @@ class Config(object):
         return resource_filename('pcbmode', self._default_config_filename)
 
     def load_defaults(self, filename=None):
-        global cfg, stl
+        global cfg, stl, stk
         if filename is None:
             filename = self._default_config_filename
 
