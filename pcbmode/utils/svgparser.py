@@ -2,6 +2,95 @@ import pyparsing as PP
 
 from pcbmode.utils.point import Point
 
+def _svg_a(s, l, t):
+    # A (rx ry x_axis_rotation large_arc_flag sweep_flag x y)+
+    command, *args = t[0]
+    arcs = [{ 'rx': a[0], 'ry': a[1], 'x_axis_rotation': a[2], 'large_arc_flag': a[3], 'sweep_flag': a[4], 'destination': a[5] } for a in args]
+    return {
+        'type': 'arcto',
+        'absolute': command.isupper(),
+        'arcs': arcs,
+    }
+
+def _svg_t(s, l, t):
+    # T (x y)+
+    command, *args = t[0]
+    return {
+        'type': 'smooth_quadratic_curveto',
+        'absolute': command.isupper(),
+        'points': args,
+    }
+
+def _svg_q(s, l, t):
+    # Q (x1 y1 x y)+
+    command, *args = t[0]
+    return {
+        'type': 'quadratic_curveto',
+        'absolute': command.isupper(),
+        'args': args,
+    }
+
+def _svg_s(s, l, t):
+    # S (x2 y2 x y)+
+    command, *args = t[0]
+    return {
+        'type': 'smooth_curveto',
+        'absolute': command.isupper(),
+        'args': args,
+    }
+
+def _svg_c(s, l, t):
+    # C (x1 y1 x2 y2 x y)+
+    command, *args = t[0]
+    return {
+        'type': 'curveto',
+        'absolute': command.isupper(),
+        'args': args,
+    }
+
+def _svg_v(s, l, t):
+    # V y+
+    command, *args = t[0]
+    return {
+        'type': 'vertical_lineto',
+        'absolute': command.isupper(),
+        'args': args,
+    }
+
+def _svg_h(s, l, t):
+    # H x+
+    command, *args = t[0]
+    return {
+        'type': 'horizontal_lineto',
+        'absolute': command.isupper(),
+        'args': args,
+    }
+
+def _svg_l(s, l, t):
+    # L (x y)+
+    command, *args = t[0]
+    return {
+        'type': 'lineto',
+        'absolute': command.isupper(),
+        'points': args,
+    }
+
+def _svg_z(s, l, t):
+    # Z
+    command, *args = t[0]
+    return {
+        'type': 'closepath',
+    }
+
+def _svg_m(s, l, t):
+    # M (x y)+
+    command, *args = t[0]
+    return {
+        'type': 'moveto',
+        'absolute': command.isupper(),
+        'args': args,
+    }
+
 class SvgParser(object):
 
     @classmethod
@@ -52,36 +141,46 @@ class SvgParser(object):
 
         elliptical_arc_argument = PP.Group(nonnegative_number + opt_comma_wsp + nonnegative_number + opt_comma_wsp + number + opt_comma_wsp + flag + opt_comma_wsp + flag + opt_comma_wsp + coordinate_pair)
         elliptical_arc_argument_sequence = elliptical_arc_argument + PP.ZeroOrMore(opt_comma_wsp + elliptical_arc_argument)
-        elliptical_arc = PP.oneOf('A a') + opt_wsp + elliptical_arc_argument_sequence
+        elliptical_arc = PP.Group(PP.oneOf('A a') + opt_wsp + elliptical_arc_argument_sequence)
+        elliptical_arc.setParseAction(_svg_a)
 
         smooth_quadratic_bezier_curveto_argument_sequence = coordinate_pair + PP.ZeroOrMore(opt_comma_wsp + coordinate_pair)
-        smooth_quadratic_bezier_curveto = PP.oneOf('T t') + opt_wsp + smooth_quadratic_bezier_curveto_argument_sequence
+        smooth_quadratic_bezier_curveto = PP.Group(PP.oneOf('T t') + opt_wsp + smooth_quadratic_bezier_curveto_argument_sequence)
+        smooth_quadratic_bezier_curveto.setParseAction(_svg_t)
 
         quadratic_bezier_curveto_argument = PP.Group(coordinate_pair + opt_comma_wsp + coordinate_pair)
         quadratic_bezier_curveto_argument_sequence = quadratic_bezier_curveto_argument + PP.ZeroOrMore(opt_comma_wsp + quadratic_bezier_curveto_argument)
-        quadratic_bezier_curveto = PP.oneOf('Q q') + opt_wsp + quadratic_bezier_curveto_argument_sequence
+        quadratic_bezier_curveto = PP.Group(PP.oneOf('Q q') + opt_wsp + quadratic_bezier_curveto_argument_sequence)
+        quadratic_bezier_curveto.setParseAction(_svg_q)
 
         smooth_curveto_argument = PP.Group(coordinate_pair + opt_comma_wsp + coordinate_pair)
         smooth_curveto_argument_sequence = smooth_curveto_argument + PP.ZeroOrMore(opt_comma_wsp + smooth_curveto_argument)
-        smooth_curveto = PP.oneOf('S s') + opt_wsp + smooth_curveto_argument_sequence
+        smooth_curveto = PP.Group(PP.oneOf('S s') + opt_wsp + smooth_curveto_argument_sequence)
+        smooth_curveto.setParseAction(_svg_s)
 
         curveto_argument = PP.Group(coordinate_pair + opt_comma_wsp + coordinate_pair + opt_comma_wsp + coordinate_pair)
         curveto_argument_sequence = curveto_argument + PP.ZeroOrMore(opt_comma_wsp + curveto_argument)
-        curveto = PP.oneOf('C c') + opt_wsp + curveto_argument_sequence
+        curveto = PP.Group(PP.oneOf('C c') + opt_wsp + curveto_argument_sequence)
+        curveto.setParseAction(_svg_c)
 
         vertical_lineto_argument_sequence = coordinate + PP.ZeroOrMore(opt_comma_wsp + coordinate)
-        vertical_lineto = PP.oneOf('V v') + opt_wsp + vertical_lineto_argument_sequence
+        vertical_lineto = PP.Group(PP.oneOf('V v') + opt_wsp + vertical_lineto_argument_sequence)
+        vertical_lineto.setParseAction(_svg_v)
 
         horizontal_lineto_argument_sequence = coordinate + PP.ZeroOrMore(opt_comma_wsp + coordinate)
-        horizontal_lineto = PP.oneOf('H h') + opt_wsp + horizontal_lineto_argument_sequence
+        horizontal_lineto = PP.Group(PP.oneOf('H h') + opt_wsp + horizontal_lineto_argument_sequence)
+        horizontal_lineto.setParseAction(_svg_h)
 
         lineto_argument_sequence = coordinate_pair + PP.ZeroOrMore(opt_comma_wsp + coordinate_pair)
-        lineto = PP.oneOf('L l') + opt_wsp + lineto_argument_sequence
+        lineto = PP.Group(PP.oneOf('L l') + opt_wsp + lineto_argument_sequence)
+        lineto.setParseAction(_svg_l)
 
-        closepath = PP.oneOf('Z z')
+        closepath = PP.Group(PP.oneOf('Z z'))
+        closepath.setParseAction(_svg_z)
 
         moveto_argument_sequence = coordinate_pair ^ (coordinate_pair + opt_comma_wsp + lineto_argument_sequence)
-        moveto = PP.oneOf('M m') + opt_wsp + moveto_argument_sequence
+        moveto = PP.Group(PP.oneOf('M m') + opt_wsp + moveto_argument_sequence)
+        moveto.setParseAction(_svg_m)
 
         drawto_command = closepath ^ lineto ^ horizontal_lineto ^ vertical_lineto ^ curveto ^ smooth_curveto ^ quadratic_bezier_curveto ^ smooth_quadratic_bezier_curveto ^ elliptical_arc
         drawto_commands = drawto_command + PP.ZeroOrMore(opt_wsp + drawto_command)
