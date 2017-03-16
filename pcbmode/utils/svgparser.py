@@ -5,11 +5,11 @@ from pcbmode.utils.point import Point
 def _svg_a(s, l, t):
     # A (rx ry x_axis_rotation large_arc_flag sweep_flag x y)+
     command, *args = t[0]
-    arcs = [{ 'rx': a[0], 'ry': a[1], 'x_axis_rotation': a[2], 'large_arc_flag': a[3], 'sweep_flag': a[4], 'destination': a[5] } for a in args]
+    segments = [{ 'rx': a[0], 'ry': a[1], 'x_axis_rotation': a[2], 'large_arc_flag': a[3], 'sweep_flag': a[4], 'destination': a[5] } for a in args]
     return {
         'type': 'arcto',
         'absolute': command.isupper(),
-        'arcs': arcs,
+        'segments': segments,
     }
 
 def _svg_t(s, l, t):
@@ -18,34 +18,37 @@ def _svg_t(s, l, t):
     return {
         'type': 'smooth_quadratic_curveto',
         'absolute': command.isupper(),
-        'points': args,
+        'segments': args,
     }
 
 def _svg_q(s, l, t):
     # Q (x1 y1 x y)+
     command, *args = t[0]
+    sgements = [{'control': a[0], 'destination': a[1]} for a in args]
     return {
         'type': 'quadratic_curveto',
         'absolute': command.isupper(),
-        'args': args,
+        'segments': segments,
     }
 
 def _svg_s(s, l, t):
     # S (x2 y2 x y)+
     command, *args = t[0]
+    segments = [{'control': a[0], 'destination': a[1]} for a in args]
     return {
         'type': 'smooth_curveto',
         'absolute': command.isupper(),
-        'args': args,
+        'segments': segments,
     }
 
 def _svg_c(s, l, t):
     # C (x1 y1 x2 y2 x y)+
     command, *args = t[0]
+    segments = [{'control1': a[0], 'control2': a[1], 'destination': a[2]} for a in args]
     return {
         'type': 'curveto',
         'absolute': command.isupper(),
-        'args': args,
+        'segments': segments,
     }
 
 def _svg_v(s, l, t):
@@ -54,7 +57,7 @@ def _svg_v(s, l, t):
     return {
         'type': 'vertical_lineto',
         'absolute': command.isupper(),
-        'args': args,
+        'segments': args,
     }
 
 def _svg_h(s, l, t):
@@ -63,7 +66,7 @@ def _svg_h(s, l, t):
     return {
         'type': 'horizontal_lineto',
         'absolute': command.isupper(),
-        'args': args,
+        'segments': args,
     }
 
 def _svg_l(s, l, t):
@@ -72,7 +75,7 @@ def _svg_l(s, l, t):
     return {
         'type': 'lineto',
         'absolute': command.isupper(),
-        'points': args,
+        'segments': args,
     }
 
 def _svg_z(s, l, t):
@@ -88,7 +91,7 @@ def _svg_m(s, l, t):
     return {
         'type': 'moveto',
         'absolute': command.isupper(),
-        'args': args,
+        'segments': args,
     }
 
 class SvgParser(object):
