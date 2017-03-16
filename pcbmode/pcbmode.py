@@ -363,8 +363,8 @@ def makeConfig(name, version, cmdline_args):
     # Get overrides
     layer_control_config = config.brd.get('layer-control')
     if layer_control_config != None:
-        config.brd['layer-control'] = dict(layer_control_default.items() +
-                                           layer_control_config.items())
+        config.brd['layer-control'] = dict(layer_control_default.items())
+        config.brd['layer-control'].update(dict(layer_control_config.items()))
     else:
         config.brd['layer-control'] = layer_control_default
 
