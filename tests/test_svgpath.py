@@ -35,14 +35,17 @@ class TestSvgPath(unittest.TestCase):
                 self.assertEqual(fake_out.getValue(), 'ERROR: found an unsupported SVG path command B')
             # it will go on to fail later, so just ignore that
 
-    def test_svg_path_from_move_single(self):
-        svg_string = 'M 1 2'
+    def assertPathParses(self, svg_string, expected_results):
         path = SvgPath(svg_string)
         self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['1','2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 0, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 0, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 1, 'should get correct number of segments')
+        if 'first_point' in expected_results:
+            self.assertEqual(path.getFirstPoint(), expected_results['first_point'], 'getFirstPoint should return first move point')
+        if 'width' in expected_results:
+            self.assertEqual(path.getWidth(), expected_results['width'], 'should calculate correct width')
+        if 'height' in expected_results:
+            self.assertEqual(path.getHeight(), expected_results['height'], 'should calculate correct height')
+        if 'num_segments' in expected_results:
+            self.assertEqual(path.getNumberOfSegments(), expected_results['num_segments'], 'should get correct number of segments')
 
     def test_svg_path_from_same_svg_string(self):
         svg_string = 'M 9 8'
@@ -51,172 +54,162 @@ class TestSvgPath(unittest.TestCase):
         path2 = SvgPath(svg_string)
         self.assertIs(path.getFirstPoint(), path2.getFirstPoint(), 'should get same path first point object')
 
+    def test_svg_path_from_move_single(self):
+        self.assertPathParses('M 1 2', {
+            'first_point': ['1', '2'],
+            'width': 0,
+            'height': 0,
+            'num_segments': 1,
+            })
+
     def test_svg_path_from_move_single_relative(self):
-        svg_string = 'm1 2'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['1','2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 0, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 0, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 1, 'should get correct number of segments')
+        self.assertPathParses('m 1 2', {
+            'first_point': ['1', '2'],
+            'width': 0,
+            'height': 0,
+            'num_segments': 1,
+            })
 
     def test_svg_path_from_move_multi(self):
-        svg_string = 'M 1 2 3 4'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['1','2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 2, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 2, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 1, 'should get correct number of segments')
+        self.assertPathParses('M 1 2 3 4', {
+            'first_point': ['1', '2'],
+            'width': 2,
+            'height': 2,
+            'num_segments': 1,
+            })
 
     def test_svg_path_from_move_multi_relative(self):
+        self.assertPathParses('m 1 2 3 4', {
+            'first_point': ['1', '2'],
+            'width': 3,
+            'height': 4,
+            'num_segments': 1,
+            })
         svg_string = 'm 1 2 3 4'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['1','2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 3, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 4, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 1, 'should get correct number of segments')
 
     def test_svg_path_from_moves_single(self):
-        svg_string = 'M 1 2 M 3 4'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['1','2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 2, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 2, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 2, 'should get correct number of segments')
+        self.assertPathParses('M 1 2 M 3 4', {
+            'first_point': ['1', '2'],
+            'width': 2,
+            'height': 2,
+            'num_segments': 2,
+            })
         # first move being relative should make no difference
-        svg_string = 'm 1 2 M 3 4'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['1','2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 2, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 2, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 2, 'should get correct number of segments')
+        self.assertPathParses('m 1 2 M 3 4', {
+            'first_point': ['1', '2'],
+            'width': 2,
+            'height': 2,
+            'num_segments': 2,
+            })
 
     def test_svg_path_from_moves_single_relative(self):
-        svg_string = 'M 1 2 m 3 4'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['1','2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 3, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 4, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 2, 'should get correct number of segments')
+        self.assertPathParses('M 1 2 m 3 4', {
+            'first_point': ['1', '2'],
+            'width': 3,
+            'height': 4,
+            'num_segments': 2,
+            })
 
     def test_svg_path_from_vertical_line_single(self):
-        svg_string = 'M 3 -2 V 5'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['3', '-2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 0, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 7, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 1, 'should get correct number of segments')
+        self.assertPathParses('M3-2V5', {
+            'first_point': ['3', '-2'],
+            'width': 0,
+            'height': 7,
+            'num_segments': 1,
+            })
 
     def test_svg_path_from_vertical_line_multi(self):
-        svg_string = 'M 3 -2 V 5 6'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['3', '-2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 0, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 8, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 1, 'should get correct number of segments')
+        self.assertPathParses('M3-2V5 6', {
+            'first_point': ['3', '-2'],
+            'width': 0,
+            'height': 8,
+            'num_segments': 1,
+            })
 
     def test_svg_path_from_vertical_line_single_relative(self):
-        svg_string = 'M 3 -2 v 5'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['3', '-2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 0, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 5, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 1, 'should get correct number of segments')
+        self.assertPathParses('M3-2v5', {
+            'first_point': ['3', '-2'],
+            'width': 0,
+            'height': 5,
+            'num_segments': 1,
+            })
 
     def test_svg_path_from_vertical_line_multi_relative(self):
-        svg_string = 'M 3 -2 v 5 6'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['3', '-2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 0, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 11, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 1, 'should get correct number of segments')
+        self.assertPathParses('M3-2v5 6', {
+            'first_point': ['3', '-2'],
+            'width': 0,
+            'height': 11,
+            'num_segments': 1,
+            })
 
     def test_svg_path_from_horizontal_line_single(self):
-        svg_string = 'M 3 -2 H 5'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['3', '-2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 2, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 0, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 1, 'should get correct number of segments')
+        self.assertPathParses('M3-2H5', {
+            'first_point': ['3', '-2'],
+            'width': 2,
+            'height': 0,
+            'num_segments': 1,
+            })
 
     def test_svg_path_from_horizontal_line_multi(self):
-        svg_string = 'M 3 -2 H 5 6'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['3', '-2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 3, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 0, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 1, 'should get correct number of segments')
+        self.assertPathParses('M3-2H5 6', {
+            'first_point': ['3', '-2'],
+            'width': 3,
+            'height': 0,
+            'num_segments': 1,
+            })
 
     def test_svg_path_from_horizontal_line_single_relative(self):
-        svg_string = 'M 3 -2 h 5'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['3', '-2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 5, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 0, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 1, 'should get correct number of segments')
+        self.assertPathParses('M3-2h5', {
+            'first_point': ['3', '-2'],
+            'width': 5,
+            'height': 0,
+            'num_segments': 1,
+            })
 
     def test_svg_path_from_horizontal_line_multi_relative(self):
-        svg_string = 'M 3 -2 h 5 6'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['3', '-2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 11, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 0, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 1, 'should get correct number of segments')
+        self.assertPathParses('M3-2h5 6', {
+            'first_point': ['3', '-2'],
+            'width': 11,
+            'height': 0,
+            'num_segments': 1,
+            })
 
     def test_svg_path_from_line_single(self):
-        svg_string = 'M 3 -2 L 7 1'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['3', '-2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 4, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 3, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 1, 'should get correct number of segments')
+        self.assertPathParses('M3-2L7,1', {
+            'first_point': ['3', '-2'],
+            'width': 4,
+            'height': 3,
+            'num_segments': 1,
+            })
 
     def test_svg_path_from_line_multi(self):
-        svg_string = 'M 3 -2 L 7 1 7 -2'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['3', '-2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 4, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 3, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 1, 'should get correct number of segments')
+        self.assertPathParses('M3-2L7,1,7,-2', {
+            'first_point': ['3', '-2'],
+            'width': 4,
+            'height': 3,
+            'num_segments': 1,
+            })
 
     def test_svg_path_from_line_single_relative(self):
-        svg_string = 'M 3 -2 l 4 3'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['3', '-2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 4, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 3, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 1, 'should get correct number of segments')
+        self.assertPathParses('M3-2l4,3', {
+            'first_point': ['3', '-2'],
+            'width': 4,
+            'height': 3,
+            'num_segments': 1,
+            })
 
     def test_svg_path_from_line_multi_relative(self):
-        svg_string = 'M 3 -2 l 4 3 0 -3'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['3', '-2'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 4, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 3, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 1, 'should get correct number of segments')
+        self.assertPathParses('M3-2l4,3,0,-3', {
+            'first_point': ['3', '-2'],
+            'width': 4,
+            'height': 3,
+            'num_segments': 1,
+            })
 
     def test_svg_path_close(self):
-        svg_string = 'M 5 8 z'
-        path = SvgPath(svg_string)
-        self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
-        self.assertEqual(path.getFirstPoint(), ['5', '8'], 'getFirstPoint should return first move point')
-        self.assertEqual(path.getWidth(), 0, 'should calculate correct width')
-        self.assertEqual(path.getHeight(), 0, 'should calculate correct height')
-        self.assertEqual(path.getNumberOfSegments(), 1, 'should get correct number of segments')
+        self.assertPathParses('M5,8z', {
+            'first_point': ['5', '8'],
+            'width': 0,
+            'height': 0,
+            'num_segments': 1,
+            })
