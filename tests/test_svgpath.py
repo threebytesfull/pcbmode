@@ -46,6 +46,7 @@ class TestSvgPath(unittest.TestCase):
             self.assertEqual(path.getHeight(), expected_results['height'], 'should calculate correct height')
         if 'num_segments' in expected_results:
             self.assertEqual(path.getNumberOfSegments(), expected_results['num_segments'], 'should get correct number of segments')
+        return path
 
     def test_svg_path_from_same_svg_string(self):
         svg_string = 'M 9 8'
