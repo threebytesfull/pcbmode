@@ -1,6 +1,9 @@
 import unittest
 from unittest.mock import patch
 
+import io
+import pyparsing as PP
+
 from pcbmode.config import Config
 from pcbmode.utils.svgpath import SvgPath
 
@@ -20,6 +23,17 @@ class TestSvgPath(unittest.TestCase):
         """A path with an unknown command should raise a parsing exception"""
         with self.assertRaises(Exception):
             path = SvgPath('F9 9 9')
+
+    @patch('pcbmode.utils.svgpath.SvgPath._makeSVGGrammar')
+    def test_would_notify_unhandled_but_parsed_command_in_make_relative(self, grammar_method):
+        """If the parser matched an element not handled in the if statements, it should be notified at the bottom"""
+        fake_grammar = PP.Group(PP.Literal('B') + PP.Group(PP.Word('12345') * 2))
+        grammar_method.return_value = fake_grammar
+        with self.assertRaises(Exception):
+            with patch('sys.stdout', new=io.StringIO()) as fake_out:
+                path = SvgPath('B 234 567')
+                self.assertEqual(fake_out.getValue(), 'ERROR: found an unsupported SVG path command B')
+            # it will go on to fail later, so just ignore that
 
     def test_svg_path_from_move_single(self):
         svg_string = 'M 1 2'
