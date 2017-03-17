@@ -154,6 +154,9 @@ class Config(object):
             pretty_config_file_paths = ''.join(['\n  {}'.format(p) for p in config_file_paths])
             pcbmode.utils.messages.error("Couldn't open PCBmodE's configuration file {}. Looked for it here:{}".format(filename, pretty_config_file_paths))
 
+        # set some defaults which may be overridden by local config or command-line options later
+        cfg['digest-digits'] = 10
+
         # next, read global styles
         layout_resource_path = resource_filename('pcbmode', os.path.join('styles', self._default_style_layout, 'layout.json'))
         stl = { 'layout': pcbmode.utils.json.dictFromJsonFile(layout_resource_path) }

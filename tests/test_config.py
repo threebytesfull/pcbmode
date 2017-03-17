@@ -94,6 +94,10 @@ class TestConfig(unittest.TestCase):
         self.assertIsNotNone(self.c.get('stl'), 'style data should be present after load_defaults')
         self.assertIsNotNone(self.c.get('stk'), 'stackup data should be present after load_defaults')
 
+    def test_load_defaults_sets_digest_digits(self):
+        self.c.load_defaults()
+        self.assertEqual(self.c.get('cfg', 'digest-digits'), 10, 'should default to 10 digest-digits')
+
     def test_global_config_path(self):
         self.assertEqual(self.c.global_config_path, pkg_resources.resource_filename('pcbmode', pcbmode.config.DEFAULT_CONFIG_FILENAME), 'should get correct global config path')
 
