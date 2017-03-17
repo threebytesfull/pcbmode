@@ -24,7 +24,7 @@ def _svg_t(s, l, t):
 def _svg_q(s, l, t):
     # Q (x1 y1 x y)+
     command, *args = t[0]
-    sgements = [{'control': a[0], 'destination': a[1]} for a in args]
+    segments = [{'control': a[0], 'destination': a[1]} for a in args]
     return {
         'type': 'quadratic_curveto',
         'absolute': command.isupper(),
@@ -181,7 +181,8 @@ class SvgParser(object):
         closepath = PP.Group(PP.oneOf('Z z'))
         closepath.setParseAction(_svg_z)
 
-        moveto_argument_sequence = coordinate_pair ^ (coordinate_pair + opt_comma_wsp + lineto_argument_sequence)
+        moveto_argument_sequence2 = coordinate_pair + opt_comma_wsp + lineto_argument_sequence
+        moveto_argument_sequence = coordinate_pair ^ moveto_argument_sequence2
         moveto = PP.Group(PP.oneOf('M m') + opt_wsp + moveto_argument_sequence)
         moveto.setParseAction(_svg_m)
 
