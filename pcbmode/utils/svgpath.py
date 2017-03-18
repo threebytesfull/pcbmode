@@ -699,6 +699,19 @@ class SvgPath():
 
 
 
+    def _quadratic_bezier_limit(self, start, control, end):
+        # check for nonzero denominator before beginning
+        denom = 2*control - start - end
+        if denom == 0:
+            raise Exception('zero denominator in bezier limit should not be reached')
+
+        # find t (0..1) at which limit occurs
+        t = (control - start) / denom
+        t2 = t*t
+
+        # find value for that limit
+        return start*(t2-2*t+1) + control*(-2*t2+2*t) + end*t2
+
     def getCoordList(self, steps, length):
         return self._makeCoordList(self._relative_parsed, steps, length)
 
