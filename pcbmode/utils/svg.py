@@ -566,17 +566,8 @@ def mirror_path_over_axis(path, axis, width):
 
 def boundary_box_check(tl, br, p):
 
-    new_tl = Point(tl.x, tl.y)
-    new_br = Point(br.x, br.y)
-
-    if p.x > br.x:
-        new_br.x = p.x
-    if p.x < tl.x:
-        new_tl.x = p.x
-    if p.y > tl.y:
-        new_tl.y = p.y
-    if p.y < br.y:
-        new_br.y = p.y
+    new_tl = Point(min(tl.x, p.x), max(tl.y, p.y))
+    new_br = Point(max(br.x, p.x), min(br.y, p.y))
 
     return new_tl, new_br
 
