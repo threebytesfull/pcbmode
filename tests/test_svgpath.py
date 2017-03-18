@@ -207,6 +207,142 @@ class TestSvgPath(unittest.TestCase):
             'num_segments': 1,
             })
 
+    @unittest.skip('arcs not implemented yet')
+    def test_svg_path_from_arc_single(self):
+        self.assertPathParses('M5,1A8,9 10 0 1 6,7', {
+            'first_point': ['5', '1'],
+            'num_segments': 1,
+            })
+
+    @unittest.skip('arcs not implemented yet')
+    def test_svg_path_from_arc_multi(self):
+        self.assertPathParses('M5,1A8,9 10 0 1 6,7 5,6 8 1 0 8,8', {
+            'first_point': ['5', '1'],
+            'num_segments': 1,
+            })
+
+    @unittest.skip('arcs not implemented yet')
+    def test_svg_path_from_arc_single_relative(self):
+        self.assertPathParses('M5,1a8,9 10 0 1 6,7', {
+            'first_point': ['5', '1'],
+            'num_segments': 1,
+            })
+
+    @unittest.skip('arcs not implemented yet')
+    def test_svg_path_from_arc_multi_relative(self):
+        self.assertPathParses('M5,1a8,9 10 0 1 6,7 5,6 8 1 0 8,8', {
+            'first_point': ['5', '1'],
+            'num_segments': 1,
+            })
+
+    def test_svg_path_from_quadratic_bezier_single(self):
+        self.assertPathParses('M5,0Q10 5 15 0', {
+            'first_point': ['5', '0'],
+            'num_segments': 1,
+            'width': 10,
+            })
+
+    def test_svg_path_from_quadratic_bezier_multi(self):
+        self.assertPathParses('M5,0Q10 5 15 0 20 -5 25 0', {
+            'first_point': ['5', '0'],
+            'num_segments': 1,
+            'width': 20,
+            })
+
+    def test_svg_path_from_quadratic_bezier_single_relative(self):
+        self.assertPathParses('M5,0q5 5 10 0', {
+            'first_point': ['5', '0'],
+            'num_segments': 1,
+            'width': 10,
+            })
+
+    def test_svg_path_from_quadratic_bezier_multi_relative(self):
+        self.assertPathParses('M5,0q5 5 10 0 5 -5 10 0', {
+            'first_point': ['5', '0'],
+            'num_segments': 1,
+            'width': 20,
+            })
+
+    @unittest.skip('smooth quadratic bezier dimensions calculation not implemented yet')
+    def test_svg_path_from_smooth_quadratic_bezier_single(self):
+        self.assertPathParses('M 3 4 T 5 6', {
+            'first_point': ['3', '4'],
+            'num_segments': 1,
+            })
+
+    @unittest.skip('smooth quadratic bezier dimensions calculation not implemented yet')
+    def test_svg_path_from_smooth_quadratic_bezier_multi(self):
+        self.assertPathParses('M 3 4 T 5 6 -1 -2', {
+            'first_point': ['3', '4'],
+            'num_segments': 1,
+            })
+
+    @unittest.skip('smooth quadratic bezier dimensions calculation not implemented yet')
+    def test_svg_path_from_smooth_quadratic_bezier_single_relative(self):
+        self.assertPathParses('M 3 4 t 5 6', {
+            'first_point': ['3', '4'],
+            'num_segments': 1,
+            })
+
+    @unittest.skip('smooth quadratic bezier dimensions calculation not implemented yet')
+    def test_svg_path_from_smooth_quadratic_bezier_multi_relative(self):
+        self.assertPathParses('M 3 4 t 5 6 -1 -2', {
+            'first_point': ['3', '4'],
+            'num_segments': 1,
+            })
+
+    def test_svg_from_curve_single(self):
+        self.assertPathParses('M6-1C5,2 6,4 -5,-4', {
+            'first_point': ['6', '-1'],
+            'num_segments': 1,
+            })
+
+    def test_svg_from_curve_multi(self):
+        self.assertPathParses('M6-1C5,2 6,4 -5,-4 1 2 3 4 5 6', {
+            'first_point': ['6', '-1'],
+            'num_segments': 1,
+            })
+
+    def test_svg_from_curve_single_relative(self):
+        self.assertPathParses('M6-1c5,2 6,4 -5,-4', {
+            'first_point': ['6', '-1'],
+            'num_segments': 1,
+            })
+
+    def test_svg_from_curve_multi_relative(self):
+        self.assertPathParses('M6-1c5,2 6,4 -5,-4 1 2 3 4 5 6', {
+            'first_point': ['6', '-1'],
+            'num_segments': 1,
+            })
+
+    @unittest.skip('smooth cubic bezier dimensions calculation not implemented yet')
+    def test_svg_from_smooth_curve_single(self):
+        self.assertPathParses('M6-1S5,2 6,4', {
+            'first_point': ['6', '-1'],
+            'num_segments': 1,
+            })
+
+    @unittest.skip('smooth cubic bezier dimensions calculation not implemented yet')
+    def test_svg_from_smooth_curve_multi(self):
+        self.assertPathParses('M6-1S5,2 6,4 1 2 3 4', {
+            'first_point': ['6', '-1'],
+            'num_segments': 1,
+            })
+
+    @unittest.skip('smooth cubic bezier dimensions calculation not implemented yet')
+    def test_svg_from_smooth_curve_single_relative(self):
+        self.assertPathParses('M6-1s5,2 6,4', {
+            'first_point': ['6', '-1'],
+            'num_segments': 1,
+            })
+
+    @unittest.skip('smooth cubic bezier dimensions calculation not implemented yet')
+    def test_svg_from_smooth_curve_multi_relative(self):
+        self.assertPathParses('M6-1s5,2 6,4 1 2 3 4', {
+            'first_point': ['6', '-1'],
+            'num_segments': 1,
+            })
+
     def test_svg_path_close(self):
         self.assertPathParses('M5,8z', {
             'first_point': ['5', '8'],
