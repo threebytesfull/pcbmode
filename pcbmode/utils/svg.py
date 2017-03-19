@@ -382,17 +382,13 @@ def relative_svg_path_to_absolute_coord_list(path, bezier_steps=100, segment_len
                     coord = pd[i][n+m]
                     point = Point(coord[0], coord[1])
                     bezier_curve_path.append(ap + point)
-                    # inject a second, identical control point so this quadratic
-                    # bezier looks like a cubic one
-                    if m == 1:
-                        bezier_curve_path.append(ap+point)
                     if m == 0:
                         last_bezier_control_point = ap + point
                 new_point = Point(pd[i][n+m][0], pd[i][n+m][1])
                 ap += new_point
 
 
-            for n in range(0, len(bezier_curve_path), 4):
+            for n in range(0, len(bezier_curve_path), 3):
 
                 # clear bezier point arrays
                 bezier_points_x = []
@@ -400,15 +396,15 @@ def relative_svg_path_to_absolute_coord_list(path, bezier_steps=100, segment_len
 
                 # split points of bezier into 'x' and 'y' coordinate arrays
                 # as this is what the point array function expects
-                for m in range(0, 4):
+                for m in range(0, 3):
                     bezier_points_x.append(bezier_curve_path[n+m].x)
                     bezier_points_y.append(bezier_curve_path[n+m].y)
 
 
                 # calculate the individual points along the bezier curve for 'x'
                 # and 'y'
-                points_x = calculate_points_of_cubic_bezier(bezier_points_x, bezier_steps)
-                points_y = calculate_points_of_cubic_bezier(bezier_points_y, bezier_steps)
+                points_x = calculate_points_of_quadratic_bezier(bezier_points_x, bezier_steps)
+                points_y = calculate_points_of_quadratic_bezier(bezier_points_y, bezier_steps)
 
                 path_length = calculate_cubic_bezier_length(points_x, points_y)
                 skip = int(ceil(bezier_steps / (path_length / segment_length)))
@@ -694,17 +690,13 @@ def calculate_bounding_box_of_path(path):
                     coord = pd[i][n+m]
                     point = Point(coord[0], coord[1])
                     bezier_curve_path.append(abs_point + point)
-                    # inject a second, identical control point so this quadratic
-                    # bezier looks like a cubic one
-                    if m == 1:
-                        bezier_curve_path.append(abs_point + point)
                     if m == 0:
                         last_bezier_control_point = abs_point + point
                 new_point = Point(pd[i][n+m][0], pd[i][n+m][1])
                 abs_point += new_point
 
 
-            for n in range(0, len(bezier_curve_path), 4):
+            for n in range(0, len(bezier_curve_path), 3):
 
                 # clear bezier point arrays
                 bezier_points_x = []
@@ -712,14 +704,14 @@ def calculate_bounding_box_of_path(path):
 
                 # split points of bezier into 'x' and 'y' coordinate arrays
                 # as this is what the point array function expects
-                for m in range(0, 4):
+                for m in range(0, 3):
                     bezier_points_x.append(bezier_curve_path[n+m].x)
                     bezier_points_y.append(bezier_curve_path[n+m].y)
 
                 # calculate the individual points along the bezier curve for 'x'
                 # and 'y'
-                points_x = calculate_points_of_cubic_bezier(bezier_points_x, 100)
-                points_y = calculate_points_of_cubic_bezier(bezier_points_y, 100)
+                points_x = calculate_points_of_quadratic_bezier(bezier_points_x, 100)
+                points_y = calculate_points_of_quadratic_bezier(bezier_points_y, 100)
 
                 bezier_point_array = []
 
@@ -829,6 +821,32 @@ def calculate_bounding_box_of_path(path):
 
 
 
+
+def calculate_points_of_quadratic_bezier(p, steps = 10):
+    """
+    This function receives three points [start, control, end] and returns
+    points on the quadratic Bezier curve that they define. It uses forward
+    difference calculation the same way that calculate_points_of_cubic_bezier
+    does.
+    """
+
+    t = 1.0 / steps
+    t2 = t*t
+
+    f = p[0]
+    fd = 2*(p[1] - p[0]) * t
+    fdd_per_2 = (p[0] - 2*p[1] + p[2]) * t2
+
+    fdd = 2 * fdd_per_2
+
+    points = []
+    for x in range(steps):
+        points.append(f)
+        f += fd + fdd_per_2
+        fd += fdd
+    points.append(f)
+
+    return points
 
 def calculate_points_of_cubic_bezier(p, steps = 10):
     """

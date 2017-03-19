@@ -482,45 +482,29 @@ class SvgPath():
                         coord = path[i][n+m]
                         point = Point(coord[0], coord[1])
                         bezier_curve_path.append(abs_point + point)
-                        # inject a second, identical control point so this quadratic
-                        # bezier looks like a cubic one
-                        if m == 1:
-                            bezier_curve_path.append(abs_point + point)
                         if m == 0:
                             last_bezier_control_point = abs_point + point
                     new_point = Point(path[i][n+m][0], path[i][n+m][1])
                     abs_point += new_point
 
 
-                for n in range(0, len(bezier_curve_path), 4):
-
-                    # clear bezier point arrays
-                    bezier_points_x = []
-                    bezier_points_y = []
+                for n in range(0, len(bezier_curve_path), 3):
 
                     # split points of bezier into 'x' and 'y' coordinate arrays
                     # as this is what the point array function expects
-                    for m in range(0, 4):
-                        bezier_points_x.append(bezier_curve_path[n+m].x)
-                        bezier_points_y.append(bezier_curve_path[n+m].y)
+                    bezier_points_x, bezier_points_y = zip(*[(p.x, p.y) for p in bezier_curve_path[n:n+3]])
 
                     # calculate the individual points along the bezier curve for 'x'
                     # and 'y'
-                    points_x = svg.calculate_points_of_cubic_bezier(bezier_points_x, 100)
-                    points_y = svg.calculate_points_of_cubic_bezier(bezier_points_y, 100)
-
-                    bezier_point_array = []
-
-                    # put those points back into a Point type array
-                    for n in range(0, len(points_x)):
-                        bezier_point_array.append(Point(points_x[n], points_y[n]))
+                    points_x = svg.calculate_points_of_quadratic_bezier(bezier_points_x, 100)
+                    points_y = svg.calculate_points_of_quadratic_bezier(bezier_points_y, 100)
 
                     # check each point if it extends the boundary box
-                    for n in range(0, len(bezier_point_array)):
+                    for point in (Point(points_x[n], points_y[n]) for n in range(len(points_x))):
                         bbox_top_left, bbox_bot_right = svg.boundary_box_check(
                                 bbox_top_left,
                                 bbox_bot_right,
-                                bezier_point_array[n])
+                                point)
 
 
             # simple cubic Bezier curve command
@@ -865,17 +849,13 @@ class SvgPath():
                         coord = pd[i][n+m]
                         point = Point(coord[0], coord[1])
                         bezier_curve_path.append(ap + point)
-                        # inject a second, identical control point so this quadratic
-                        # bezier looks like a cubic one
-                        if m == 1:
-                            bezier_curve_path.append(ap+point)
                         if m == 0:
                             last_bezier_control_point = ap + point
                     new_point = Point(pd[i][n+m][0], pd[i][n+m][1])
                     ap += new_point
 
 
-                for n in range(0, len(bezier_curve_path), 4):
+                for n in range(0, len(bezier_curve_path), 3):
 
                     # clear bezier point arrays
                     bezier_points_x = []
@@ -883,15 +863,15 @@ class SvgPath():
 
                     # split points of bezier into 'x' and 'y' coordinate arrays
                     # as this is what the point array function expects
-                    for m in range(0, 4):
+                    for m in range(0, 3):
                         bezier_points_x.append(bezier_curve_path[n+m].x)
                         bezier_points_y.append(bezier_curve_path[n+m].y)
 
 
                     # calculate the individual points along the bezier curve for 'x'
                     # and 'y'
-                    points_x = self._linearizeCubicBezier(bezier_points_x, steps)
-                    points_y = self._linearizeCubicBezier(bezier_points_y, steps)
+                    points_x = svg.calculate_points_of_quadratic_bezier(bezier_points_x, steps)
+                    points_y = svg.calculate_points_of_quadratic_bezier(bezier_points_y, steps)
 
                     path_length = svg.calculate_length_of_path_points(points_x, points_y)
                     skip = int(ceil(steps / (path_length / length)))
