@@ -698,7 +698,6 @@ class SvgPath():
 
 
 
-
     def _quadratic_bezier_limit(self, start, control, end):
         # check for nonzero denominator before beginning
         denom = 2*control - start - end
