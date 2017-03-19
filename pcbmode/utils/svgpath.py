@@ -751,26 +751,6 @@ class SvgPath():
 
 
 
-    def _getCubicBezierLength(self, px, py):
-        """
-        Return the length of a cubic bezier
-        """
-
-        length = 0.0
-
-        prev = Point(px[0], py[0])
-
-        for i in range(1, len(px)):
-            length += sqrt((px[i] - prev.x)**2 + (py[i] - prev.y)**2)
-            prev = Point(px[i], py[i])
-
-        return length
-
-
-
-
-
-
 
     def getCoordList(self, steps, length):
         return self._makeCoordList(self._relative_parsed, steps, length)
@@ -856,7 +836,7 @@ class SvgPath():
                     points_x = self._linearizeCubicBezier(bezier_points_x, steps)
                     points_y = self._linearizeCubicBezier(bezier_points_y, steps)
 
-                    path_length = self._getCubicBezierLength(points_x, points_y)
+                    path_length = svg.calculate_length_of_path_points(points_x, points_y)
 
                     if path_length == 0:
                         steps_tmp = 1
@@ -913,7 +893,7 @@ class SvgPath():
                     points_x = self._linearizeCubicBezier(bezier_points_x, steps)
                     points_y = self._linearizeCubicBezier(bezier_points_y, steps)
 
-                    path_length = self._getCubicBezierLength(points_x, points_y)
+                    path_length = svg.calculate_length_of_path_points(points_x, points_y)
                     skip = int(ceil(steps / (path_length / length)))
 
                     bezier_point_array = []
@@ -963,7 +943,7 @@ class SvgPath():
                     points_x = self._linearizeCubicBezier(bezier_points_x, steps)
                     points_y = self._linearizeCubicBezier(bezier_points_y, steps)
 
-                    path_length = self._getCubicBezierLength(points_x, points_y)
+                    path_length = svg.calculate_length_of_path_points(points_x, points_y)
                     skip = int(ceil(steps / (path_length / length)))
 
                     bezier_point_array = []

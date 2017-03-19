@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from math import pi, sin, cos, sqrt, ceil
+from math import pi, sin, cos, sqrt, ceil, hypot
 import pyparsing as PYP
 import re
 from lxml import etree as et
@@ -864,6 +864,22 @@ def calculate_points_of_cubic_bezier(p, steps = 10):
     points.append(f)
 
     return points
+
+def calculate_length_of_path_points(points_x, points_y):
+    """
+    Return the length of a path supplied in the form of x and y coordinate
+    arrays
+    """
+
+    length = 0.0
+
+    prev = Point(points_x[0], points_y[0])
+
+    for i in range(1, len(points_x)):
+        length += hypot(points_x[i] - prev.x, points_y[i] - prev.y)
+        prev = Point(points_x[i], points_y[i])
+
+    return length
 
 
 
