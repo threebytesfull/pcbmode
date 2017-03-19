@@ -31,15 +31,15 @@ class Module():
     """
     """
 
-    def __init__(self, 
-                 module_dict, 
-                 routing_dict, 
+    def __init__(self,
+                 module_dict,
+                 routing_dict,
                  asmodule=False):
         """
         """
 
         ns = {'pcbmode':config.cfg['ns']['pcbmode'],
-              'svg':config.cfg['ns']['svg']} 
+              'svg':config.cfg['ns']['svg']}
 
         self._module_dict = module_dict
         self._routing_dict = routing_dict
@@ -90,7 +90,7 @@ class Module():
         self._placeOutlineDimensions()
 
         msg.subInfo('Placing components:', newline=False)
-        self._placeComponents(components=self._components, 
+        self._placeComponents(components=self._components,
                               component_type='component',
                               print_refdef=True)
         sys.stdout.write("\n")
@@ -99,12 +99,12 @@ class Module():
         self._placeRouting()
 
         msg.subInfo('Placing vias')
-        self._placeComponents(components=self._vias, 
+        self._placeComponents(components=self._vias,
                               component_type='via',
                               print_refdef=False)
 
         msg.subInfo('Placing shapes')
-        self._placeComponents(components=self._shapes, 
+        self._placeComponents(components=self._shapes,
                               component_type='shape',
                               print_refdef=False)
 
@@ -127,7 +127,7 @@ class Module():
         for pcb_layer in config.stk['layer-names']:
             if utils.checkForPoursInLayer(pcb_layer) is True:
                 mask_cover = et.SubElement(self._masks[pcb_layer], 'rect',
-                                           x="%s" % str(-self._width/2), 
+                                           x="%s" % str(-self._width/2),
                                            y="%s" % str(-self._height/2),
                                            width="%s" % self._width,
                                            height="%s" % self._height,
@@ -148,12 +148,12 @@ class Module():
         output_file = os.path.join(config.cfg['base-dir'],
                                    config.cfg['locations']['build'],
                                    config.cfg['name'] + '.svg')
-     
+
         try:
             f = open(output_file, 'wb')
         except IOError as e:
             print("I/O error({0}): {1}".format(e.errno, e.strerror))
-     
+
         f.write(et.tostring(svg_doc, pretty_print=True))
         f.close()
 
@@ -172,24 +172,24 @@ class Module():
             Returns a path for an arrow of width 'width' with a center gap of
             width 'gap'
             """
- 
+
             # Length of bar perpendicular to the arrow's shaft
             base_length = 1.8
- 
+
             # Height of arrow's head
             arrow_height = 2.5
- 
+
             # Width of arrow's head
             arrow_base = 1.2
-     
+
             # Create path
-            path = "m %s,%s %s,%s m %s,%s %s,%s m %s,%s %s,%s m %s,%s %s,%s m %s,%s m %s,%s %s,%s m %s,%s %s,%s m %s,%s %s,%s m %s,%s %s,%s" % (-gap/2,0, -width/2+gap/2,0, 0,base_length/2, 0,-base_length, arrow_height,(base_length-arrow_base)/2, -arrow_height,arrow_base/2, arrow_height,arrow_base/2, -arrow_height,-arrow_base/2, width/2,0, gap/2,0, width/2-gap/2,0, 0,base_length/2, 0,-base_length, -arrow_height,(base_length-arrow_base)/2, arrow_height,arrow_base/2, -arrow_height,arrow_base/2, arrow_height,-arrow_base/2,) 
-            
+            path = "m %s,%s %s,%s m %s,%s %s,%s m %s,%s %s,%s m %s,%s %s,%s m %s,%s m %s,%s %s,%s m %s,%s %s,%s m %s,%s %s,%s m %s,%s %s,%s" % (-gap/2,0, -width/2+gap/2,0, 0,base_length/2, 0,-base_length, arrow_height,(base_length-arrow_base)/2, -arrow_height,arrow_base/2, arrow_height,arrow_base/2, -arrow_height,-arrow_base/2, width/2,0, gap/2,0, width/2-gap/2,0, 0,base_length/2, 0,-base_length, -arrow_height,(base_length-arrow_base)/2, arrow_height,arrow_base/2, -arrow_height,arrow_base/2, arrow_height,-arrow_base/2,)
+
             return path
 
 
 
- 
+
         # Create text shapes
         shape_dict = {}
         shape_dict['type'] = 'text'
@@ -220,7 +220,7 @@ class Module():
         height_text = Shape(height_text_dict)
         style = Style(height_text_dict, 'dimensions')
         height_text.setStyle(style)
- 
+
         # Width arrow
         shape_dict = {}
         shape_dict['type'] = 'path'
@@ -229,7 +229,7 @@ class Module():
         width_arrow = Shape(shape_dict)
         style = Style(shape_dict, 'dimensions')
         width_arrow.setStyle(style)
- 
+
         # Height arrow
         shape_dict = {}
         shape_dict['type'] = 'path'
@@ -247,7 +247,7 @@ class Module():
         place.placeShape(height_text, group)
         place.placeShape(width_arrow, group)
         place.placeShape(height_arrow, group)
-        
+
 
 
 
@@ -255,7 +255,7 @@ class Module():
 
     def _placeComponents(self, components, component_type, print_refdef=False):
         """
-        Places the component on the board.  
+        Places the component on the board.
 
         'component_type' is the content of the 'type' fiels of the
         placed group. This is used by the extractor to identify the
@@ -292,11 +292,11 @@ class Module():
                 if len(shapes) > 0:
 
                     svg_layer = self._layers[pcb_layer]['conductor']['pads']['layer']
-     
+
                     transform = "translate(%s,%s)" % (location[0],
                                                       config.cfg['invert-y']*location[1])
 
-                    shape_group = et.SubElement(svg_layer, 'g', 
+                    shape_group = et.SubElement(svg_layer, 'g',
                                                 transform=transform)
 
 
@@ -327,9 +327,9 @@ class Module():
 
 
                         if there_are_pours == True:
-                            mask_group = et.SubElement(self._masks[pcb_layer], 'g', 
+                            mask_group = et.SubElement(self._masks[pcb_layer], 'g',
                                                        transform=transform)
-                            self._placeMask(mask_group, 
+                            self._placeMask(mask_group,
                                             shape,
                                             'pad',
                                             original=False,
@@ -370,7 +370,7 @@ class Module():
                     for shape in shapes:
                         placed_element = place.placeShape(shape, group, invert)
 
-     
+
                 # Solderpaste
                 shapes = shapes_dict['solderpaste'].get(pcb_layer) or []
                 try:
@@ -400,7 +400,7 @@ class Module():
                                                       config.cfg['invert-y']*location[1])
                     shape_group = et.SubElement(svg_layer, 'g', transform=transform)
                     shape_group.set('{'+config.cfg['ns']['pcbmode']+'}type', 'component-shapes')
-     
+
                     for shape in shapes:
                         # Refdefs need to be in their own groups so that their
                         # location can later be extracted, hence this...
@@ -429,7 +429,7 @@ class Module():
                 except:
                     svg_layer = None
 
-                if len(shapes) > 0 and svg_layer != None: 
+                if len(shapes) > 0 and svg_layer != None:
                     transform = "translate(%s,%s)" % (location[0],
                                                       config.cfg['invert-y']*location[1])
                     group = et.SubElement(svg_layer, 'g', transform=transform)
@@ -488,7 +488,7 @@ class Module():
 
             if (component_type == 'component'):
                 style = utils.dictToStyleText(config.stl['layout']['placement']['text'])
-     
+
                 t = et.SubElement(group, 'text', x="0", y="-0.17", style=style)
                 ts = et.SubElement(t, 'tspan', x="0", dy="0.1")
                 ts.text = "%s" % (refdef)
@@ -498,7 +498,7 @@ class Module():
                 ts.text = "[%.2f,%.2f]" % (location[0], location[1])
             elif (component_type == 'shape'):
                 style = utils.dictToStyleText(config.stl['layout']['placement']['text'])
-     
+
                 t = et.SubElement(group, 'text', x="0", y="-0.17", style=style)
                 ts = et.SubElement(t, 'tspan', x="0", dy="0.1")
                 ts.text = "%s" % (refdef)
@@ -508,7 +508,7 @@ class Module():
                 ts.text = "[%.2f,%.2f]" % (location[0], location[1])
             elif (component_type == 'via'):
                 style = utils.dictToStyleText(config.stl['layout']['placement']['text'])
-     
+
                 t = et.SubElement(group, 'text', x="0", y="-0.11", style=style)
                 ts = et.SubElement(t, 'tspan', x="0", dy="0.1")
                 ts.text = htmlpar.unescape("%s&#176;" % (rotation))
@@ -531,12 +531,12 @@ class Module():
 
         # Path effects are used for meandering paths, for example
         path_effects = routes.get('path_effects')
- 
+
         xpath_expr = "//g[@inkscape:label='%s']//g[@inkscape:label='%s']"
         extra_attributes = ['inkscape:connector-curvature', 'inkscape:original-d', 'inkscape:path-effect']
- 
+
         for pcb_layer in config.stk['layer-names']:
- 
+
             # Are there pours in the layer? This makes a difference for whether to place
             # masks
             there_are_pours = utils.checkForPoursInLayer(pcb_layer)
@@ -588,22 +588,22 @@ class Module():
                 # TODO: this needs to eventually go away or be done properly
                 pcbmode_params = shape_dict.get('pcbmode')
                 if pcbmode_params is not None:
-                    route_element.set('pcbmode', pcbmode_params)                
+                    route_element.set('pcbmode', pcbmode_params)
 
                 if ((there_are_pours == True) and (custom_buffer != "0")):
-                    self._placeMask(self._masks[pcb_layer], 
-                                    shape, 
+                    self._placeMask(self._masks[pcb_layer],
+                                    shape,
                                     'route',
                                     use_original_path)
 
 #                # Due to the limitation of the Gerber format, and the method chosen
 #                # for applying masks onto pours, it is not possible to have copper
 #                # pour material inside of paths that have more than a single segment.
-#                # In order to make the apperance in the SVG and Gerbers consistent, 
+#                # In order to make the apperance in the SVG and Gerbers consistent,
 #                # each path segment is added with a 'fill'. In the future, when the
 #                # *actual* shape is calculated, it may be possible to avoid this
 #                # hack. On the other hand, one can argue that having pours inside of
-#                # shapes doesn't make sense anyway, because it alters its apperance, 
+#                # shapes doesn't make sense anyway, because it alters its apperance,
 #                # and such shapes are stylistic anyway. OK, back to code now...
 #                gerber_lp = shape.getGerberLP()
 #                if gerber_lp is not None:
@@ -617,7 +617,7 @@ class Module():
 #                                                             type="mask_shape",
 #                                                             style="fill:#000;stroke:none;",
 #                                                             d='m '+path_segment)
-# 
+#
 #                            i += 1
 
 
@@ -631,7 +631,7 @@ class Module():
         'kind'    : type of shape; used to fetch the correct distance to pour
         'original': use the original path, not the transformed one
         """
-        
+
         # Get the desired distance based on 'kind' 'outline', 'drill',
         # 'pad', 'route' unless 'pour_buffer' is specified
         pour_buffer = shape.getPourBuffer()
@@ -653,12 +653,12 @@ class Module():
                 # This width provides a distance of 'pour_buffer' from the
                 # edge of the trace to a pour
                 width = style.getStrokeWidth() + pour_buffer*2
-                mask_element.set('style', style_template % ('none', width))        
+                mask_element.set('style', style_template % ('none', width))
 
             path = shape.getOriginalPath().lower()
             segments = path.count('m')
             mask_element.set('{'+config.cfg['ns']['pcbmode']+'}gerber-lp', 'c'*segments)
-            
+
 
 
 
@@ -670,7 +670,7 @@ class Module():
         shape_group.set('{'+config.cfg['ns']['pcbmode']+'}type', 'module-shapes')
         place.placeShape(self._outline, shape_group)
 
-        # Place a mask for the board's outline. This creates a buffer between 
+        # Place a mask for the board's outline. This creates a buffer between
         # the board's edge and pours
         try:
             pour_buffer = self._module['distances']['from-pour-to']['outline']
@@ -708,7 +708,7 @@ class Module():
             docs_dict[key]['location'] = [0, 0]
 
             shape_group = et.SubElement(self._layers['documentation']['layer'], 'g')
-            shape_group.set('{'+config.cfg['ns']['pcbmode']+'}type', 'module-shapes')            
+            shape_group.set('{'+config.cfg['ns']['pcbmode']+'}type', 'module-shapes')
             shape_group.set('{'+config.cfg['ns']['pcbmode']+'}doc-key', key)
             shape_group.set('transform', "translate(%s,%s)" % (location.x, config.cfg['invert-y']*location.y))
 
@@ -748,7 +748,7 @@ class Module():
             # board's edge
             gap = 2
             location = [self._width/2+gap, self._height/2-rect_height/2]
-        location = utils.toPoint(location)        
+        location = utils.toPoint(location)
 
         rect_dict = {}
         rect_dict['type'] = 'rect'
@@ -787,7 +787,7 @@ class Module():
                 location.y += config.cfg['invert-y']*(rect_height+rect_gap)
 
             location.y += config.cfg['invert-y']*(rect_height+rect_gap*1.5)
-                
+
 
 
 
@@ -832,20 +832,20 @@ class Module():
             # board's edge
             gap = 2
             location = [-self._width/2, -(self._height/2+gap)]
-        location = utils.toPoint(location)        
+        location = utils.toPoint(location)
 
         # Create group for placing index
         transform = "translate(%s,%s)" % (location.x, config.cfg['invert-y']*location.y)
         group = et.SubElement(drill_layer, 'g',
                               transform=transform)
         group.set('{'+config.cfg['ns']['pcbmode']+'}type', 'drill-index')
-        
+
 
         text_style_dict = config.stl['layout']['drill-index'].get('text')
         text_style = utils.dictToStyleText(text_style_dict)
- 
+
         count_style_dict = config.stl['layout']['drill-index'].get('count-text')
-        count_style = utils.dictToStyleText(count_style_dict)        
+        count_style = utils.dictToStyleText(count_style_dict)
 
         count_style_dict['font-size'] /= 2
         drill_size_style = utils.dictToStyleText(count_style_dict)
@@ -896,7 +896,7 @@ class Module():
                               style=drill_size_style)
             t.text = "%s mm" % diameter
 
-            location.x += max(diameter, 2.5) 
+            location.x += max(diameter, 2.5)
 
 
 
@@ -914,22 +914,22 @@ class Module():
                             version='1.1',
                             nsmap=config.cfg['ns'],
                             fill='black')
-        
+
         # Set Inkscape options tag
         inkscape_opt = et.SubElement(module,
                                      '{'+config.cfg['ns']['sodipodi']+'}%s' % 'namedview',
                                      id="namedview-pcbmode",
                                      showgrid="true")
-       
+
         # Add units definition (only 'mm' is supported)
         inkscape_opt.set('{'+config.cfg['ns']['inkscape']+'}%s' % 'document-units',
                          config.brd['config']['units'])
-       
+
         # Open window maximised
         inkscape_opt.set('{'+config.cfg['ns']['inkscape']+'}%s' % 'window-maximized',
                          '1')
-       
-        # Define a grid 
+
+        # Define a grid
         et.SubElement(inkscape_opt, '{'+config.cfg['ns']['inkscape']+'}%s' % 'grid',
                       type="xygrid",
                       id="pcbmode-grid",
@@ -939,10 +939,10 @@ class Module():
                       emspacing="5",
                       spacingx="0.1mm",
                       spacingy="0.1mm")
-       
+
         # Add a welcome message as a comment in the SVG
         welcome_message = """
-Hello! This SVG file was generated using PCBmodE version %s on %s GMT. 
+Hello! This SVG file was generated using PCBmodE version %s on %s GMT.
 PCBmodE is open source software
 
   http://pcbmode.com
@@ -951,7 +951,7 @@ and is maintained by Boldport
 
   http://boldport.com
 
-""" % (config.cfg['version'], datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")) 
+""" % (config.cfg['version'], datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
         module.append(et.Comment(welcome_message))
 
         return module
@@ -972,7 +972,7 @@ and is maintained by Boldport
         # Get shapes for each component definition
         for refdef in components_dict:
             component_dict = components_dict[refdef]
-            
+
             # Show or hide the component.
             # This will still account the component for the BoM
             show = component_dict.get('show', True)
@@ -984,7 +984,7 @@ and is maintained by Boldport
             if (show == True) and (place == True):
                 component = Component(refdef, component_dict)
                 components.append(component)
-        
+
         return components
 
 

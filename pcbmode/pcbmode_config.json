@@ -11,14 +11,14 @@
   },
   "distances":
   {
-    "from-pour-to": 
+    "from-pour-to":
     {
       "outline": 0.5,
-      "drill": 0.3, 
-      "pad": 0.2, 
+      "drill": 0.3,
+      "pad": 0.2,
       "route": 0.25
     },
-    "soldermask": 
+    "soldermask":
     {
       "path-scale": 1.05,
       "rect-buffer": 0.05,
@@ -164,7 +164,7 @@
             "conductor": {"ext": "GBL"},
             "soldermask": {"ext": "GBS"},
             "silkscreen": {"ext": "GBO"},
-            "solderpaste": {"ext": "GBP"}  
+            "solderpaste": {"ext": "GBP"}
           },
           "other":
    	  {

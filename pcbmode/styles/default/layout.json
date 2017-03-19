@@ -73,7 +73,7 @@
     {
     }
   },
-  "conductor": 
+  "conductor":
   {
     "default":
     {
@@ -82,21 +82,21 @@
         "stroke": "#008500",
         "fill": "#008500",
         "stroke-opacity": 0.6,
-        "fill-opacity": 0.6   
+        "fill-opacity": 0.6
       },
       "internal":
       {
         "stroke": "#F2B705",
         "fill": "#F2B705",
         "stroke-opacity": 0.6,
-        "fill-opacity": 0.6   
+        "fill-opacity": 0.6
       },
       "bottom":
       {
         "stroke": "#A60000",
         "fill": "#A60000",
         "stroke-opacity": 0.6,
-        "fill-opacity": 0.6   
+        "fill-opacity": 0.6
       }
     },
     "pads":
@@ -199,14 +199,14 @@
         "stroke": "#9FEE00",
         "fill": "#9FEE00",
         "stroke-opacity": 0.6,
-        "fill-opacity": 0.6   
+        "fill-opacity": 0.6
       },
       "bottom":
       {
         "stroke": "#CD0074",
         "fill": "#CD0074",
         "stroke-opacity": 0.6,
-        "fill-opacity": 0.6   
+        "fill-opacity": 0.6
       }
     },
     "stroke":
@@ -245,14 +245,14 @@
         "stroke": "#A0A0A0",
         "fill": "#A0A0A0",
         "stroke-opacity": 0.6,
-        "fill-opacity": 0.6   
+        "fill-opacity": 0.6
       },
       "bottom":
       {
         "stroke": "#A0A0A0",
         "fill": "#A0A0A0",
         "stroke-opacity": 0.6,
-        "fill-opacity": 0.6   
+        "fill-opacity": 0.6
       }
     },
     "stroke":
@@ -281,9 +281,9 @@
     },
     "text":
     {
-      "font-family": "Overlock-Regular-OTF-webfont", 
-      "font-size": "1.5mm", 
-      "letter-spacing": "0mm", 
+      "font-family": "Overlock-Regular-OTF-webfont",
+      "font-size": "1.5mm",
+      "letter-spacing": "0mm",
       "line-height": "1.5mm"
     }
   },
@@ -296,14 +296,14 @@
         "stroke": "#009999",
         "fill": "#009999",
         "stroke-opacity": 0.6,
-        "fill-opacity": 0.6   
+        "fill-opacity": 0.6
       },
       "bottom":
       {
         "stroke": "#FF7400",
         "fill": "#FF7400",
         "stroke-opacity": 0.6,
-        "fill-opacity": 0.6   
+        "fill-opacity": 0.6
       }
     },
     "stroke":
@@ -447,7 +447,7 @@
       "fill": "#111111",
       "fill-opacity": 0.8,
       "font-style": "normal",
-      "font-size": 1.6, 
+      "font-size": 1.6,
       "font-variant": "normal",
       "font-weight": "bold",
       "font-stretch": "normal",
@@ -464,8 +464,8 @@
   {
     "text":
     {
-      "font-family": "Overlock-Regular-OTF-webfont", 
-      "font-size": "1.2mm", 
+      "font-family": "Overlock-Regular-OTF-webfont",
+      "font-size": "1.2mm",
       "letter-spacing": "0mm",
       "line-height": "1.2mm"
     }

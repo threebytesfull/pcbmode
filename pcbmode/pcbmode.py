@@ -32,31 +32,31 @@ def cmdArgSetup(pcbmode_version):
 
     epilog = """
     """
-    
+
     # commandline argument settings and parsing
-    argp = argparse.ArgumentParser(description=description, 
+    argp = argparse.ArgumentParser(description=description,
                       add_help=True, epilog=epilog)
-     
+
     argp.add_argument('-b', '--board-name',
                       dest='boards', required=True, nargs=1,
                       help='The name of the board. The location of the files should be specified in the configuration file, otherwise defaults are used')
-     
+
     argp.add_argument('-f', '--filein', required=False,
                       dest='filein',
                       help='Input file name')
-     
+
     argp.add_argument('-o', '--fileout',
                       dest='fileout',
                       help='Output file name')
-     
+
     argp.add_argument('-c', '--config-file', default='pcbmode_config.json',
                       dest='config_file',
                       help='Configuration file name (default=pcbmode_config.json)')
-     
+
     argp.add_argument('-m', '--make-board',
                       action='store_true', dest='make', default=False,
                       help="Create SVG for the board specified with the '-b'/'--board_name' switch. The output's location can be specified in the configuration file")
-     
+
     argp.add_argument('-e', '--extract',
                       action='store_true', dest='extract', default=False,
                       help="Extract routing and component placement from board's SVG")
@@ -64,7 +64,7 @@ def cmdArgSetup(pcbmode_version):
     argp.add_argument('--extract-refdefs',
                       action='store_true', dest='extract_refdefs', default=False,
                       help="Extract components' reference designator location and rotation from board's SVG")
-     
+
     argp.add_argument('--fab', nargs='?',
                       dest='fab', default=False,
                       help='Generate manufacturing files (Gerbers, Excellon, etc.) An optional argument specifies the fab for custom filenames')
@@ -98,7 +98,7 @@ def cmdArgSetup(pcbmode_version):
                       help="Create a simple placement coordinate CSV file")
 
     argp.add_argument('--make-bom', nargs='?',
-                      dest='make_bom', default=False, 
+                      dest='make_bom', default=False,
                       help='Create a bill of materials')
 
     argp.add_argument('--sig-dig', nargs=1,
@@ -147,8 +147,8 @@ def makeConfig(name, version, cmdline_args):
 
     # Read in the board's configuration data
     msg.info("Processing board's configuration file")
-    filename = os.path.join(config.cfg['locations']['boards'], 
-                            config.cfg['name'], 
+    filename = os.path.join(config.cfg['locations']['boards'],
+                            config.cfg['name'],
                             config.cfg['name'] + '.json')
     config.brd = utils.dictFromJsonFile(filename)
 
@@ -166,7 +166,7 @@ def makeConfig(name, version, cmdline_args):
     # Style
     #=================================
 
-    # Get style file; search for it in the project directory and 
+    # Get style file; search for it in the project directory and
     # where the script it
     layout_style = config.brd['config']['style-layout']
     layout_style_filename = 'layout.json'
@@ -223,7 +223,7 @@ def makeConfig(name, version, cmdline_args):
     #---------------------------------------------------------------
     # Path database
     #---------------------------------------------------------------
-    filename = os.path.join(config.cfg['locations']['boards'], 
+    filename = os.path.join(config.cfg['locations']['boards'],
                             config.cfg['name'],
                             config.cfg['locations']['build'],
                             'paths_db.json')
@@ -237,7 +237,7 @@ def makeConfig(name, version, cmdline_args):
     #----------------------------------------------------------------
     # Routing
     #----------------------------------------------------------------
-    filename = os.path.join(config.cfg['base-dir'], 
+    filename = os.path.join(config.cfg['base-dir'],
                             config.brd['files'].get('routing-json') or config.cfg['name'] + '_routing.json')
 
     # Open database file. If it doesn't exist, leave the database in
@@ -274,7 +274,7 @@ def makeConfig(name, version, cmdline_args):
         else:
             msg.info("Commandline significant digit specification not in range, setting to %d" % config.cfg['significant-digits'])
 
-    # buffer from board outline to display block edge 
+    # buffer from board outline to display block edge
     config.cfg['display-frame-buffer'] = config.cfg.get('display_frame_buffer', 1.0)
 
     # the style for masks used for copper pours
@@ -302,7 +302,7 @@ def makeConfig(name, version, cmdline_args):
         except:
             board_distances_dict[dk] = {}
             board_dict = board_distances_dict[dk]
-        
+
         for k in config_dict.keys():
             board_dict[k] = (board_dict.get(k) or config_dict[k])
 
@@ -333,7 +333,7 @@ def makeConfig(name, version, cmdline_args):
         tmp = config.brd['gerber']
     except:
         config.brd['gerber'] = {}
-    gd = config.brd['gerber']    
+    gd = config.brd['gerber']
     gd['decimals'] = config.brd['gerber'].get('decimals') or 6
     gd['digits'] = config.brd['gerber'].get('digits') or 6
     gd['steps-per-segment'] = config.brd['gerber'].get('steps-per-segment') or 100
@@ -354,8 +354,8 @@ def makeConfig(name, version, cmdline_args):
     # config file will override these settings
     #-----------------------------------------------------------------
     layer_control_default = {
-      "conductor": { 
-        "place": True, "hide": False, "lock": False, 
+      "conductor": {
+        "place": True, "hide": False, "lock": False,
         "pours": { "place": True, "hide": False, "lock": True },
         "pads": { "place": True, "hide": False, "lock": False },
         "routing": { "place": True, "hide": False, "lock": False }
@@ -411,7 +411,7 @@ def main():
         if cmdline_args.renumber is None:
             order = 'top-to-bottom'
         else:
-            order = cmdline_args.renumber.lower()    
+            order = cmdline_args.renumber.lower()
 
         utils.renumberRefdefs(order)
 
@@ -439,19 +439,19 @@ def main():
                 manufacturer = 'default'
             else:
                 manufacturer = cmdline_args.fab.lower()
-     
+
             msg.info("Creating Gerbers")
             gerber.gerberise(manufacturer)
 
             msg.info("Creating excellon drill file")
             excellon.makeExcellon(manufacturer)
-     
+
         if cmdline_args.pngs is True:
             msg.info("Creating PNGs")
             utils.makePngs()
-   
-    
-    filename = os.path.join(config.cfg['locations']['boards'], 
+
+
+    filename = os.path.join(config.cfg['locations']['boards'],
                             config.cfg['name'],
                             config.cfg['locations']['build'],
                             'paths_db.json')
@@ -460,7 +460,7 @@ def main():
         f = open(filename, 'w')
     except IOError as e:
         print("I/O error({0}): {1}".format(e.errno, e.strerror))
- 
+
     json.dump(config.pth, f, sort_keys=True, indent=2)
     f.close()
 

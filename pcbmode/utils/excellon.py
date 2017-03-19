@@ -18,7 +18,7 @@ def makeExcellon(manufacturer='default'):
     """
 
     ns = {'pcbmode':config.cfg['ns']['pcbmode'],
-          'svg':config.cfg['ns']['svg']} 
+          'svg':config.cfg['ns']['svg']}
 
     # Open the board's SVG
     svg_in = utils.openBoardSVG()
@@ -28,8 +28,8 @@ def makeExcellon(manufacturer='default'):
     excellon = Excellon(drills_layer)
 
     # Save to file
-    base_dir = os.path.join(config.cfg['base-dir'], 
-                            config.cfg['locations']['build'], 
+    base_dir = os.path.join(config.cfg['base-dir'],
+                            config.cfg['locations']['build'],
                             'production')
     base_name = "%s_rev_%s" % (config.brd['config']['name'],
                                config.brd['config']['rev'])
@@ -59,7 +59,7 @@ class Excellon():
         self._svg = svg
 
         self._ns = {'pcbmode':config.cfg['ns']['pcbmode'],
-                    'svg':config.cfg['ns']['svg']} 
+                    'svg':config.cfg['ns']['svg']}
 
         # Get all drill paths except for the ones used in the
         # drill-index
@@ -98,7 +98,7 @@ class Excellon():
             # diameters are wrong!
             # Drill index must be greater than 0
             drills[diameter]['index'] = i+1
-            ex.append("T%dC%s\n" % (i+1, diameter)) 
+            ex.append("T%dC%s\n" % (i+1, diameter))
 
         ex.append('M95\n') # End of a part program header
 
@@ -118,7 +118,7 @@ class Excellon():
         ex.append('M48\n') # Beginning of a part program header
         ex.append('METRIC,TZ\n') # Metric, trailing zeros
         ex.append('G90\n') # Absolute mode
-        ex.append('M71\n') # Metric measuring mode        
+        ex.append('M71\n') # Metric measuring mode
         return ex
 
 
@@ -153,7 +153,7 @@ class Excellon():
         transform = path.get('transform')
         if transform != None:
             transform_data = utils.parseTransform(transform)
-            location += transform_data['location']        
+            location += transform_data['location']
 
         return location
 

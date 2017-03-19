@@ -63,7 +63,7 @@ class Component():
         footprint = Footprint(footprint_dict)
         footprint_shapes = footprint.getShapes()
 
-        #------------------------------------------------        
+        #------------------------------------------------
         # Apply component-specific modifiers to footprint
         #------------------------------------------------
         for sheet in ['conductor', 'soldermask', 'solderpaste', 'pours', 'silkscreen', 'assembly', 'drills']:
@@ -79,14 +79,14 @@ class Component():
                                         mirror=shape.getMirrorPlacement(),
                                         add=True)
 
-        #-------------------------------------------------------------- 
-        # Remove silkscreen and assembly shapes if instructed 
-        #-------------------------------------------------------------- 
+        #--------------------------------------------------------------
+        # Remove silkscreen and assembly shapes if instructed
+        #--------------------------------------------------------------
         # If the 'show' flag is 'false then remove these items from the
-        # shapes dictionary 
+        # shapes dictionary
         #--------------------------------------------------------------
         for sheet in ['silkscreen','assembly']:
-            
+
             try:
                 shapes_dict = component[sheet].get('shapes') or {}
             except:
@@ -104,34 +104,34 @@ class Component():
         # Add silkscreen and assembly reference designator (refdef)
         #----------------------------------------------------------
         for sheet in ['silkscreen','assembly']:
-            
+
             try:
                 refdef_dict = component[sheet].get('refdef') or {}
             except:
                 refdef_dict = {}
-     
+
             if refdef_dict.get('show') != False:
                 layer = refdef_dict.get('layer') or 'top'
-         
+
                 # Rotate the refdef; if unspecified the rotation is the same as
                 # the rotation of the component
                 refdef_dict['rotate'] = refdef_dict.get('rotate') or 0
- 
+
                 # Sometimes you'd want to keep all refdefs at the same angle
                 # and not rotated with the component
                 if refdef_dict.get('rotate-with-component') != False:
                     refdef_dict['rotate'] += self._rotate
 
                 refdef_dict['rotate-point'] = utils.toPoint(refdef_dict.get('rotate-point')) or self._rotate_point
-     
+
                 refdef_dict['location'] = refdef_dict.get('location') or [0, 0]
                 refdef_dict['type'] = 'text'
                 refdef_dict['value'] = refdef_dict.get('value') or refdef
                 refdef_dict['font-family'] = (refdef_dict.get('font-family') or
-                                              config.stl['layout'][sheet]['refdef'].get('font-family') or 
+                                              config.stl['layout'][sheet]['refdef'].get('font-family') or
                                               config.stl['defaults']['font-family'])
-                refdef_dict['font-size'] = (refdef_dict.get('font-size') or 
-                                            config.stl['layout'][sheet]['refdef'].get('font-size') or 
+                refdef_dict['font-size'] = (refdef_dict.get('font-size') or
+                                            config.stl['layout'][sheet]['refdef'].get('font-size') or
                                             "2mm")
                 refdef_shape = Shape(refdef_dict)
 
@@ -149,7 +149,7 @@ class Component():
                     footprint_shapes[sheet][layer] = []
 
                 footprint_shapes[sheet][layer].append(refdef_shape)
-                    
+
 
         #------------------------------------------------------
         # Invert layers
@@ -160,7 +160,7 @@ class Component():
 
         if self._layer == 'bottom':
             layers = config.stk['layer-names']
-           
+
             for sheet in ['conductor', 'pours', 'soldermask', 'solderpaste', 'silkscreen', 'assembly']:
                 sheet_dict = footprint_shapes[sheet]
                 sheet_dict_new = {}
@@ -170,7 +170,7 @@ class Component():
                     except:
                         continue
 
-                footprint_shapes[sheet] = copy.copy(sheet_dict_new)    
+                footprint_shapes[sheet] = copy.copy(sheet_dict_new)
 
         self._footprint_shapes = footprint_shapes
 

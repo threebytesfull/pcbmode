@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from math import pi, sin, cos, sqrt, ceil
+from math import pi, sin, cos, sqrt, ceil, hypot
 import pyparsing as PYP
 import re
 from lxml import etree as et
@@ -22,12 +22,12 @@ def svg_grammar():
     comma = PYP.Literal(",").suppress() # supress removes the ',' when captured
     dot = PYP.Literal(".")
     space = PYP.Literal(' ')
-    coord = PYP.Regex(r"-?\d+(\.\d*)?([Ee][+-]?\d+)?") 
+    coord = PYP.Regex(r"-?\d+(\.\d*)?([Ee][+-]?\d+)?")
     one_coord = PYP.Group(coord)
     xycoords = PYP.Group(coord + PYP.Optional(comma) + coord)
     two_xycoords = xycoords + PYP.Optional(comma) + xycoords
     three_xycoords = xycoords + PYP.Optional(comma) + xycoords + PYP.Optional(comma)+xycoords
-    
+
     # TODO optimise this; there has to be a more efficient way to describe this
     c_M = PYP.Literal('M') + PYP.OneOrMore(xycoords)
     c_m = PYP.Literal('m') + PYP.OneOrMore(xycoords)
@@ -55,7 +55,7 @@ def svg_grammar():
 
     c_z = PYP.Literal('z')
     c_Z = PYP.Literal('Z')
-    
+
     path_cmd = c_M | c_m | c_C | c_c | c_Q | c_q | c_T | c_t | c_L | c_l | c_V | c_v | c_H | c_h | c_S | c_s | c_Z | c_z
 
     # return the format we're after
@@ -98,7 +98,7 @@ def absolute_to_relative_path(path):
         if re.match('M', pd[i][0], re.I):
 
             # TODO: write this code more concisely
-            
+
             coord = Point(pd[i][1][0], pd[i][1][1])
             p += 'm '
 
@@ -113,27 +113,27 @@ def absolute_to_relative_path(path):
                     p += str(coord.x) + ',' + str(coord.y) + ' '
                     abspos += coord
                     patho = abspos
-                    
+
                 else:
                     p += str(coord.x - abspos.x) + ',' + str(coord.y - abspos.y) + ' '
                     abspos.assign(coord.x, coord.y)
                     patho.assign(coord.x, coord.y)
-            
+
             # do the rest of the coordinates
             for coord_tmp in pd[i][2:]:
                 coord.assign(coord_tmp[0], coord_tmp[1])
                 if pd[i][0] == 'm':
                     p += str(coord.x) + ',' + str(coord.y) + ' '
-                    abspos += coord 
+                    abspos += coord
                 else:
                     p += str(coord.x - abspos.x) + ',' + str(coord.y - abspos.y) + ' '
                     abspos.assign(coord.x, coord.y)
 
-        
-        # cubic Bezier (PCCP) curve command 
+
+        # cubic Bezier (PCCP) curve command
         elif re.match('C', pd[i][0], re.I):
             p += pd[i][0].lower()+' '
-            
+
             if pd[i][0] == 'c':
                 for coord_tmp in pd[i][1:]:
                     coord.assign(coord_tmp[0], coord_tmp[1])
@@ -142,20 +142,20 @@ def absolute_to_relative_path(path):
                 # *third* coordinate of the cubic Bezier curve
                 for coord_tmp in pd[i][3::3]:
                     coord.assign(coord_tmp[0], coord_tmp[1])
-                    abspos += coord 
+                    abspos += coord
 
             if pd[i][0] == 'C':
                 for n in range(1, len(pd[i])-1, 3):
                     for m in range(0, 3):
-                        coord.assign(pd[i][n+m][0], pd[i][n+m][1]) 
+                        coord.assign(pd[i][n+m][0], pd[i][n+m][1])
                         p += str(coord.x - abspos.x) + ',' + str(coord.y - abspos.y)+' '
                     abspos.assign(coord.x, coord.y)
 
 
-        # quadratic Bezier (PCP) curve command 
+        # quadratic Bezier (PCP) curve command
         elif re.match('Q', pd[i][0], re.I):
             p += pd[i][0].lower() + ' '
-            
+
             if pd[i][0] == 'q':
                 for coord_tmp in pd[i][1:]:
                     coord.assign(coord_tmp[0], coord_tmp[1])
@@ -164,7 +164,7 @@ def absolute_to_relative_path(path):
                 # *third* coordinate of the cubic Bezier curve
                 for coord_tmp in pd[i][2::2]:
                     coord.assign(coord_tmp[0], coord_tmp[1])
-                    abspos += coord 
+                    abspos += coord
 
             if pd[i][0] == 'Q':
                 for coord_tmp in pd[i][1:]:
@@ -173,10 +173,10 @@ def absolute_to_relative_path(path):
                 abspos.assign(coord.x, coord.y)
 
 
-        # simple cubic Bezier curve command 
+        # simple cubic Bezier curve command
         elif re.match('T', pd[i][0], re.I):
             p += pd[i][0].lower()+' '
-            
+
             if pd[i][0] == 't':
                 for coord_tmp in pd[i][1:]:
                     coord.assign(coord_tmp[0], coord_tmp[1])
@@ -184,7 +184,7 @@ def absolute_to_relative_path(path):
                 # for keeping track of the absolute position, we need to add up every
                 # *third* coordinate of the cubic Bezier curve
                 #for coord in pd[i][2::2]:
-                    abspos += coord 
+                    abspos += coord
 
             if pd[i][0] == 'T':
                 for coord_tmp in pd[i][1:]:
@@ -194,12 +194,12 @@ def absolute_to_relative_path(path):
 
         elif re.match('S', pd[i][0], re.I):
             p += pd[i][0].lower()+' '
-            
+
             if pd[i][0] == 's':
                 for coord_tmp in pd[i][1:]:
                     coord.assign(coord_tmp[0], coord_tmp[1])
                     p += str(coord.x)+','+str(coord.y)+' '
-                    abspos += coord 
+                    abspos += coord
 
             if pd[i][0] == 'S':
                 for coord_tmp in pd[i][1:]:
@@ -211,12 +211,12 @@ def absolute_to_relative_path(path):
         # 'line to'  command
         elif re.match('L', pd[i][0], re.I):
             p += pd[i][0].lower()+' '
-            
+
             if pd[i][0] == 'l':
                 for coord_tmp in pd[i][1:]:
                     coord.assign(coord_tmp[0], coord_tmp[1])
                     p += str(coord.x) + ',' + str(coord.y) + ' '
-                    abspos += coord 
+                    abspos += coord
 
             if pd[i][0] == 'L':
                 for coord_tmp in pd[i][1:]:
@@ -228,7 +228,7 @@ def absolute_to_relative_path(path):
         # 'horizontal line' command
         elif re.match('H', pd[i][0], re.I):
             p += pd[i][0].lower()+' '
-            
+
             if pd[i][0] == 'h':
                 for coord_tmp in pd[i][1:]:
                     coord.assign(coord_tmp[0], 0)
@@ -244,7 +244,7 @@ def absolute_to_relative_path(path):
         # 'vertical line' command
         elif re.match('V', pd[i][0], re.I):
             p += pd[i][0].lower() + ' '
-            
+
             if pd[i][0] == 'v':
                 for coord_tmp in pd[i][1:]:
                     coord.assign(0, coord_tmp[0])
@@ -290,7 +290,7 @@ def relative_svg_path_to_absolute_coord_list(path, bezier_steps=100, segment_len
 
     # path origin
     po = Point()
-    
+
     points = []
     p = []
 
@@ -315,17 +315,17 @@ def relative_svg_path_to_absolute_coord_list(path, bezier_steps=100, segment_len
                 p = []
                 p.append(ap)
                 po = ap
-                
+
             for coord_tmp in pd[i][2:]:
                 coord = Point(coord_tmp[0], coord_tmp[1])
                 ap += coord
                 p.append(ap)
 
-        # cubic (two control points) Bezier curve command 
+        # cubic (two control points) Bezier curve command
         elif re.match('c', cmd):
 
             bezier_curve_path = []
-            
+
             for n in range(1, len(pd[i])-1, 3):
                 bezier_curve_path.append(ap)
                 for m in range(0, 3):
@@ -333,12 +333,12 @@ def relative_svg_path_to_absolute_coord_list(path, bezier_steps=100, segment_len
                     point = Point(coord[0], coord[1])
                     bezier_curve_path.append(ap + point)
                 new_point = Point(pd[i][n+m][0], pd[i][n+m][1])
-                ap += new_point 
+                ap += new_point
 
-      
+
             for n in range(0, len(bezier_curve_path), 4):
 
-                # clear bezier point arrays 
+                # clear bezier point arrays
                 bezier_points_x = []
                 bezier_points_y = []
 
@@ -349,7 +349,7 @@ def relative_svg_path_to_absolute_coord_list(path, bezier_steps=100, segment_len
                     bezier_points_y.append(bezier_curve_path[n+m].y)
 
 
-                # caluclate the individual points along the bezier curve for 'x'
+                # calculate the individual points along the bezier curve for 'x'
                 # and 'y'
                 points_x = calculate_points_of_cubic_bezier(bezier_points_x, bezier_steps)
                 points_y = calculate_points_of_cubic_bezier(bezier_points_y, bezier_steps)
@@ -363,7 +363,7 @@ def relative_svg_path_to_absolute_coord_list(path, bezier_steps=100, segment_len
 
                 bezier_point_array = []
 
-                # put thos points back into a Point type array
+                # put those points back into a Point type array
                 for n in range(0, len(points_x), skip):
                     bezier_point_array.append(Point(points_x[n], points_y[n]))
                 bezier_point_array.append(Point(points_x[len(points_x)-1], points_y[len(points_x)-1]))
@@ -371,60 +371,56 @@ def relative_svg_path_to_absolute_coord_list(path, bezier_steps=100, segment_len
                 p += bezier_point_array
 
 
-        # quadratic (single control point) Bezier curve command 
+        # quadratic (single control point) Bezier curve command
         elif re.match('q', cmd):
 
             bezier_curve_path = []
-            
+
             for n in range(1, len(pd[i])-1, 2):
                 bezier_curve_path.append(ap)
                 for m in range(0, 2):
                     coord = pd[i][n+m]
                     point = Point(coord[0], coord[1])
                     bezier_curve_path.append(ap + point)
-                    # inject a second, identical control point so this quadratic
-                    # bezier looks like a cubic one
-                    if m == 1:
-                        bezier_curve_path.append(ap+point)
                     if m == 0:
                         last_bezier_control_point = ap + point
                 new_point = Point(pd[i][n+m][0], pd[i][n+m][1])
-                ap += new_point   
+                ap += new_point
 
 
-            for n in range(0, len(bezier_curve_path), 4):
- 
-                # clear bezier point arrays 
+            for n in range(0, len(bezier_curve_path), 3):
+
+                # clear bezier point arrays
                 bezier_points_x = []
                 bezier_points_y = []
- 
+
                 # split points of bezier into 'x' and 'y' coordinate arrays
                 # as this is what the point array function expects
-                for m in range(0, 4):
+                for m in range(0, 3):
                     bezier_points_x.append(bezier_curve_path[n+m].x)
                     bezier_points_y.append(bezier_curve_path[n+m].y)
 
 
-                # caluclate the individual points along the bezier curve for 'x'
+                # calculate the individual points along the bezier curve for 'x'
                 # and 'y'
-                points_x = calculate_points_of_cubic_bezier(bezier_points_x, bezier_steps)
-                points_y = calculate_points_of_cubic_bezier(bezier_points_y, bezier_steps)
- 
+                points_x = calculate_points_of_quadratic_bezier(bezier_points_x, bezier_steps)
+                points_y = calculate_points_of_quadratic_bezier(bezier_points_y, bezier_steps)
+
                 path_length = calculate_cubic_bezier_length(points_x, points_y)
                 skip = int(ceil(bezier_steps / (path_length / segment_length)))
 
                 bezier_point_array = []
- 
+
                 # put those points back into a Point type array
                 for n in range(0, len(points_x), skip):
-                    bezier_point_array.append(Point(points_x[n], points_y[n]))            
+                    bezier_point_array.append(Point(points_x[n], points_y[n]))
                 bezier_point_array.append(Point(points_x[len(points_x)-1], points_y[len(points_x)-1]))
 
                 p += bezier_point_array
- 
 
 
-        # simple cubic Bezier curve command 
+
+        # simple cubic Bezier curve command
         elif re.match('t', cmd):
 
             bezier_curve_path = []
@@ -445,17 +441,17 @@ def relative_svg_path_to_absolute_coord_list(path, bezier_steps=100, segment_len
 
             for n in range(0, len(bezier_curve_path), 4):
 
-                # clear bezier point arrays 
+                # clear bezier point arrays
                 bezier_points_x = []
                 bezier_points_y = []
- 
+
                 # split points of bezier into 'x' and 'y' coordinate arrays
                 # as this is what the point array function expects
                 for m in range(0, 4):
                     bezier_points_x.append(bezier_curve_path[n+m].x)
                     bezier_points_y.append(bezier_curve_path[n+m].y)
- 
-                # caluclate the individual points along the bezier curve for 'x'
+
+                # calculate the individual points along the bezier curve for 'x'
                 # and 'y'
                 points_x = calculate_points_of_cubic_bezier(bezier_points_x, bezier_steps)
                 points_y = calculate_points_of_cubic_bezier(bezier_points_y, bezier_steps)
@@ -464,14 +460,14 @@ def relative_svg_path_to_absolute_coord_list(path, bezier_steps=100, segment_len
                 skip = int(ceil(bezier_steps / (path_length / segment_length)))
 
                 bezier_point_array = []
- 
+
                 # put those points back into a Point type array
                 for m in range(0, len(points_x), skip):
                     bezier_point_array.append(Point(points_x[m], points_y[m]))
                 bezier_point_array.append(Point(points_x[len(points_x)-1], points_y[len(points_x)-1]))
 
                 p += bezier_point_array
- 
+
 
 #        elif re.match('s', cmd):
 #            pass
@@ -488,8 +484,8 @@ def relative_svg_path_to_absolute_coord_list(path, bezier_steps=100, segment_len
             for coord_tmp in pd[i][1:]:
                 coord = Point(coord_tmp[0], 0)
                 ap += coord
-                p.append(ap)            
- 
+                p.append(ap)
+
         # 'vertical line' command
         elif re.match('v', cmd):
             for coord_tmp in pd[i][1:]:
@@ -515,7 +511,7 @@ def relative_svg_path_to_absolute_coord_list(path, bezier_steps=100, segment_len
 
 
 def mirror_path_over_axis(path, axis, width):
-    """ 
+    """
     mirrors a path horizontally by first converting it to a relative path
     and then mirrors it either horizontally or vertically by negating the
     x or y axis coordinates
@@ -528,26 +524,26 @@ def mirror_path_over_axis(path, axis, width):
 
     # convert path to relative coordinates; this simplifies the mirroring
     relative_path = absolute_to_relative_path(path)
- 
+
     # get SVG path grammar
-    look_for = svg_grammar()    
- 
+    look_for = svg_grammar()
+
     # parse the input based on this grammar
     pd = look_for.parseString(relative_path)
 
     p = ''
- 
+
     for i in range(0, len(pd)):
 
         pcmd = pd[i][0]
 
         if re.match('m', pcmd):
- 
+
             if i == 0:
                 p += 'm ' + str(width - float(pd[i][1][0])) + ',' + str(pd[i][1][1]) + ' '
             else:
                 p += 'm ' + str(-float(pd[i][1][0])) + ',' + str(pd[i][1][1]) + ' '
- 
+
             for coord in pd[i][2:]:
                 p += str(-float(coord[0])) + ',' + coord[1] + ' '
 
@@ -572,7 +568,7 @@ def boundary_box_check(tl, br, p):
 
     new_tl = Point(tl.x, tl.y)
     new_br = Point(br.x, br.y)
-    
+
     if p.x > br.x:
         new_br.x = p.x
     if p.x < tl.x:
@@ -625,23 +621,23 @@ def calculate_bounding_box_of_path(path):
             else:
                 new_point = Point(pd[i][1][0], pd[i][1][1])
                 abs_point += new_point
-                bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left, 
-                                                                   bbox_bot_right, 
+                bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left,
+                                                                   bbox_bot_right,
                                                                    abs_point)
-                
+
             # for the rest of the coordinates
             for coord in pd[i][2:]:
                 new_point = Point(coord[0], coord[1])
                 abs_point += new_point
-                bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left, 
-                                                                   bbox_bot_right, 
+                bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left,
+                                                                   bbox_bot_right,
                                                                    abs_point)
-  
-        # cubic Bezier curve command 
+
+        # cubic Bezier curve command
         elif re.match('c', pd[i][0]):
 
             bezier_curve_path = []
-            
+
             for n in range(1, len(pd[i])-1, 3):
                 bezier_curve_path.append(abs_point)
                 for m in range(0, 3):
@@ -649,12 +645,12 @@ def calculate_bounding_box_of_path(path):
                     point = Point(coord[0], coord[1])
                     bezier_curve_path.append(abs_point + point)
                 new_point = Point(pd[i][n+m][0], pd[i][n+m][1])
-                abs_point += new_point 
+                abs_point += new_point
 
-      
+
             for n in range(0, len(bezier_curve_path), 4):
 
-                # clear bezier point arrays 
+                # clear bezier point arrays
                 bezier_points_x = []
                 bezier_points_y = []
 
@@ -664,7 +660,7 @@ def calculate_bounding_box_of_path(path):
                     bezier_points_x.append(bezier_curve_path[n+m].x)
                     bezier_points_y.append(bezier_curve_path[n+m].y)
 
-                # caluclate the individual points along the bezier curve for 'x'
+                # calculate the individual points along the bezier curve for 'x'
                 # and 'y'
                 points_x = calculate_points_of_cubic_bezier(bezier_points_x, 100)
                 points_y = calculate_points_of_cubic_bezier(bezier_points_y, 100)
@@ -678,64 +674,60 @@ def calculate_bounding_box_of_path(path):
                 # check each point if it extends the boundary box
                 for n in range(0, len(bezier_point_array)):
                     bbox_top_left, bbox_bot_right = boundary_box_check(
-                            bbox_top_left, 
-                            bbox_bot_right, 
+                            bbox_top_left,
+                            bbox_bot_right,
                             bezier_point_array[n])
 
 
-        # quadratic Bezier curve command 
+        # quadratic Bezier curve command
         elif re.match('q', pd[i][0]):
 
             bezier_curve_path = []
-            
+
             for n in range(1, len(pd[i])-1, 2):
                 bezier_curve_path.append(abs_point)
                 for m in range(0, 2):
                     coord = pd[i][n+m]
                     point = Point(coord[0], coord[1])
                     bezier_curve_path.append(abs_point + point)
-                    # inject a second, identical control point so this quadratic
-                    # bezier looks like a cubic one
-                    if m == 1:
-                        bezier_curve_path.append(abs_point + point)
                     if m == 0:
                         last_bezier_control_point = abs_point + point
                 new_point = Point(pd[i][n+m][0], pd[i][n+m][1])
-                abs_point += new_point   
- 
-      
-            for n in range(0, len(bezier_curve_path), 4):
- 
-                # clear bezier point arrays 
+                abs_point += new_point
+
+
+            for n in range(0, len(bezier_curve_path), 3):
+
+                # clear bezier point arrays
                 bezier_points_x = []
                 bezier_points_y = []
- 
+
                 # split points of bezier into 'x' and 'y' coordinate arrays
                 # as this is what the point array function expects
-                for m in range(0, 4):
+                for m in range(0, 3):
                     bezier_points_x.append(bezier_curve_path[n+m].x)
                     bezier_points_y.append(bezier_curve_path[n+m].y)
- 
-                # caluclate the individual points along the bezier curve for 'x'
+
+                # calculate the individual points along the bezier curve for 'x'
                 # and 'y'
-                points_x = calculate_points_of_cubic_bezier(bezier_points_x, 100)
-                points_y = calculate_points_of_cubic_bezier(bezier_points_y, 100)
- 
+                points_x = calculate_points_of_quadratic_bezier(bezier_points_x, 100)
+                points_y = calculate_points_of_quadratic_bezier(bezier_points_y, 100)
+
                 bezier_point_array = []
- 
+
                 # put those points back into a Point type array
                 for n in range(0, len(points_x)):
                     bezier_point_array.append(Point(points_x[n], points_y[n]))
- 
+
                 # check each point if it extends the boundary box
                 for n in range(0, len(bezier_point_array)):
                     bbox_top_left, bbox_bot_right = boundary_box_check(
-                            bbox_top_left, 
-                            bbox_bot_right, 
+                            bbox_top_left,
+                            bbox_bot_right,
                             bezier_point_array[n])
 
- 
-        # simple cubic Bezier curve command 
+
+        # simple cubic Bezier curve command
         elif re.match('t', pd[i][0]):
             bezier_curve_path = []
 
@@ -744,7 +736,7 @@ def calculate_bounding_box_of_path(path):
                 coord = pd[i][n]
                 point = Point(coord[0], coord[1])
                 end_point = abs_point + point
-                diff = Point(abs_point.x - last_bezier_control_point.x, 
+                diff = Point(abs_point.x - last_bezier_control_point.x,
                              abs_point.y - last_bezier_control_point.y)
                 control_point = abs_point + diff
                 bezier_curve_path.append(control_point)
@@ -754,35 +746,35 @@ def calculate_bounding_box_of_path(path):
                 new_point = Point(pd[i][n][0], pd[i][n][1])
                 abs_point += new_point
 
-                
+
             for n in range(0, len(bezier_curve_path), 4):
- 
-                # clear bezier point arrays 
+
+                # clear bezier point arrays
                 bezier_points_x = []
                 bezier_points_y = []
- 
+
                 # split points of bezier into 'x' and 'y' coordinate arrays
                 # as this is what the point array function expects
                 for m in range(0, 4):
                     bezier_points_x.append(bezier_curve_path[n+m].x)
                     bezier_points_y.append(bezier_curve_path[n+m].y)
- 
-                # caluclate the individual points along the bezier curve for 'x'
+
+                # calculate the individual points along the bezier curve for 'x'
                 # and 'y'
                 points_x = calculate_points_of_cubic_bezier(bezier_points_x, 100)
                 points_y = calculate_points_of_cubic_bezier(bezier_points_y, 100)
- 
+
                 bezier_point_array = []
- 
+
                 # put those points back into a Point type array
                 for n in range(0, len(points_x)):
                     bezier_point_array.append(Point(points_x[n], points_y[n]))
- 
+
                 # check each point if it extends the boundary box
                 for m in range(0, len(bezier_point_array)):
                     bbox_top_left, bbox_bot_right = boundary_box_check(
-                            bbox_top_left, 
-                            bbox_bot_right, 
+                            bbox_top_left,
+                            bbox_bot_right,
                             bezier_point_array[m])
 
 
@@ -795,17 +787,17 @@ def calculate_bounding_box_of_path(path):
             for coord in pd[i][1:]:
                 new_point = Point(coord[0], coord[1])
                 abs_point += new_point
-                bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left, 
-                                                                   bbox_bot_right, 
+                bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left,
+                                                                   bbox_bot_right,
                                                                    abs_point)
-            
+
         # 'horizontal line' command
         elif re.match('h', pd[i][0]):
             for coord in pd[i][1:]:
                 new_point = Point(coord[0], 0)
                 abs_point += new_point
-                bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left, 
-                                                                   bbox_bot_right, 
+                bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left,
+                                                                   bbox_bot_right,
                                                                    abs_point)
 
         # 'vertical line' command
@@ -813,8 +805,8 @@ def calculate_bounding_box_of_path(path):
             for coord in pd[i][1:]:
                 new_point = Point(0, coord[0])
                 abs_point += new_point
-                bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left, 
-                                                                   bbox_bot_right, 
+                bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left,
+                                                                   bbox_bot_right,
                                                                    abs_point)
 
         # 'close shape' command
@@ -830,30 +822,56 @@ def calculate_bounding_box_of_path(path):
 
 
 
+def calculate_points_of_quadratic_bezier(p, steps = 10):
+    """
+    This function receives three points [start, control, end] and returns
+    points on the quadratic Bezier curve that they define. It uses forward
+    difference calculation the same way that calculate_points_of_cubic_bezier
+    does.
+    """
+
+    t = 1.0 / steps
+    t2 = t*t
+
+    f = p[0]
+    fd = 2*(p[1] - p[0]) * t
+    fdd_per_2 = (p[0] - 2*p[1] + p[2]) * t2
+
+    fdd = 2 * fdd_per_2
+
+    points = []
+    for x in range(steps):
+        points.append(f)
+        f += fd + fdd_per_2
+        fd += fdd
+    points.append(f)
+
+    return points
+
 def calculate_points_of_cubic_bezier(p, steps = 10):
     """
     This function receives four points [start, control, control, end]
     and returns points on the cubic Bezier curve that they define. As
     'steps' decreases, so do the amount of points that are returned,
-    making the curve less, well, curvey. 
+    making the curve less, well, curvey.
 
     The code for this function was adapted/copied from:
     http://www.niksula.cs.hut.fi/~hkankaan/Homepages/bezierfast.html
     http://www.pygame.org/wiki/BezierCurve
     """
-    
+
     t = 1.0 / steps
     temp = t*t
-    
+
     f = p[0]
     fd = 3 * (p[1] - p[0]) * t
     fdd_per_2 = 3 * (p[0] - 2 * p[1] + p[2]) * temp
     fddd_per_2 = 3 * (3 * (p[1] - p[2]) + p[3] - p[0]) * temp * t
-    
+
     fddd = 2 * fddd_per_2
     fdd = 2 * fdd_per_2
     fddd_per_6 = fddd_per_2 / 3.0
-    
+
     points = []
     for x in range(steps):
         points.append(f)
@@ -864,6 +882,22 @@ def calculate_points_of_cubic_bezier(p, steps = 10):
     points.append(f)
 
     return points
+
+def calculate_length_of_path_points(points_x, points_y):
+    """
+    Return the length of a path supplied in the form of x and y coordinate
+    arrays
+    """
+
+    length = 0.0
+
+    prev = Point(points_x[0], points_y[0])
+
+    for i in range(1, len(points_x)):
+        length += hypot(points_x[i] - prev.x, points_y[i] - prev.y)
+        prev = Point(points_x[i], points_y[i])
+
+    return length
 
 
 
@@ -882,7 +916,7 @@ def transform_path(p, center=False, scale=1, rotate_angle=0, rotate_point=Point(
     look_for = svg_grammar()
 
     # parse the input based on this grammar
-    pd = look_for.parseString(p) 
+    pd = look_for.parseString(p)
 
     # first point of path
     first_point = Point(pd[0][1][0], pd[0][1][1])
@@ -891,11 +925,11 @@ def transform_path(p, center=False, scale=1, rotate_angle=0, rotate_point=Point(
         # center point of path
         origin_point = Point(p_tl.x+width/2, p_tl.y-height/2)
 
-        # caluclate what's the new starting point of path based on the new origin
+        # calculate what's the new starting point of path based on the new origin
         new_first_point = Point(first_point.x - origin_point.x, first_point.y - origin_point.y)
     else:
         new_first_point = Point(first_point.x, first_point.y)
-   
+
     new_first_point.rotate(rotate_angle, rotate_point)
     new_first_point.mult(scale)
     new_p = "m %f,%f " % (new_first_point.x, new_first_point.y)
@@ -909,13 +943,13 @@ def transform_path(p, center=False, scale=1, rotate_angle=0, rotate_point=Point(
                 tmpp.assign(pd[n][m][0], pd[n][m][1])
                 tmpp.rotate(rotate_angle, rotate_point)
                 tmpp.mult(scale)
-                new_p += str(tmpp.x) + "," + str(tmpp.y) + " "   
+                new_p += str(tmpp.x) + "," + str(tmpp.y) + " "
         else:
             if pd[n][0] == 'h' or pd[n][0] == 'v':
                 new_p += "l "
             else:
                 new_p += pd[n][0] + " "
-                
+
             for m in range(1, len(pd[n])):
                 if pd[n][0] == 'h':
                     tmpp.assign(pd[n][m][0], 0)
@@ -923,7 +957,7 @@ def transform_path(p, center=False, scale=1, rotate_angle=0, rotate_point=Point(
                     tmpp.assign(0, pd[n][m][0])
                 else:
                     tmpp.assign(pd[n][m][0], pd[n][m][1])
-                    
+
                 tmpp.rotate(rotate_angle, rotate_point)
                 tmpp.mult(scale)
                 new_p += str(tmpp.x) + "," + str(tmpp.y) + " "
@@ -967,8 +1001,8 @@ def width_and_height_to_path(width, height, radii=None):
                 all_zeros = False
 
         if all_zeros is True:
-            path = "m %f,%f h %f v %f h %f v %f z" % (-width/2, -height/2, 
-                                                      width, height, 
+            path = "m %f,%f h %f v %f h %f v %f z" % (-width/2, -height/2,
+                                                      width, height,
                                                       -width, -height)
         else:
 
@@ -982,32 +1016,32 @@ def width_and_height_to_path(width, height, radii=None):
                 path += "v %f h %f " % (-height/2, width/2)
             else:
                 r = top_left
-                path += "v %f c %f,%f %f,%f %f,%f h %f " % (-(height/2-r), 0,-k*r, -r*(k-1),-r, r,-r, width/2-r) 
+                path += "v %f c %f,%f %f,%f %f,%f h %f " % (-(height/2-r), 0,-k*r, -r*(k-1),-r, r,-r, width/2-r)
 
             if top_right == 0:
                 path += "h %f v %f " % (width/2, height/2)
             else:
                 r = top_right
-                path += "h %f c %f,%f %f,%f %f,%f v %f " % (width/2-r, k*r,0, r,-r*(k-1), r,r, height/2-r) 
+                path += "h %f c %f,%f %f,%f %f,%f v %f " % (width/2-r, k*r,0, r,-r*(k-1), r,r, height/2-r)
 
             if bot_right == 0:
                 path += "v %f h %f " % (height/2, -width/2)
             else:
                 r = bot_right
-                path += "v %f c %f,%f %f,%f %f,%f h %f " % (height/2-r, 0,k*r, r*(k-1),r, -r,r, -(width/2-r)) 
+                path += "v %f c %f,%f %f,%f %f,%f h %f " % (height/2-r, 0,k*r, r*(k-1),r, -r,r, -(width/2-r))
 
             if bot_left == 0:
                 path += "h %f v %f " % (-width/2, -height/2)
             else:
                 r = bot_left
-                path += "h %f c %f,%f %f,%f %f,%f v %f " % (-(width/2-r), -k*r,0, -r,r*(k-1), -r,-r, -(height/2-r)) 
-            
+                path += "h %f c %f,%f %f,%f %f,%f v %f " % (-(width/2-r), -k*r,0, -r,r*(k-1), -r,-r, -(height/2-r))
+
             path += "z"
 
     else:
-        path = "m %f,%f h %f v %f h %f v %f z" % (-width/2, -height/2, 
-                                                   width, height, 
-                                                   -width, -height)        
+        path = "m %f,%f h %f v %f h %f v %f z" % (-width/2, -height/2,
+                                                   width, height,
+                                                   -width, -height)
 
     return path
 
@@ -1034,7 +1068,7 @@ def ring_diameters_to_path(d1, d2):
             inner = d1
         path = circle_diameter_to_path(outer)
         path += circle_diameter_to_path(inner, Point(0, outer/2))
-    
+
     return path
 
 
@@ -1087,15 +1121,15 @@ def placementMarkerPath():
     Returns a path for the placement marker
     """
     diameter = 0.2
- 
+
     r = diameter/2.0
- 
+
     # The calculation to obtain the 'k' coefficient can be found here:
     # http://itc.ktu.lt/itc354/Riskus354.pdf
     # "APPROXIMATION OF A CUBIC BEZIER CURVE BY CIRCULAR ARCS AND VICE VERSA"
     # by Aleksas Riskus
     k = 0.5522847498
- 
+
     # extension
     b = r*1.8
 
@@ -1109,7 +1143,7 @@ def placementMarkerPath():
 
 def mirror_transform(transform, axis='y'):
     """
-    Returns a mirrored transfrom 
+    Returns a mirrored transfrom
     """
 
     mirrored_transform = transform
@@ -1119,9 +1153,9 @@ def mirror_transform(transform, axis='y'):
 
     if capture is not None:
         mirrored_transform = "%s translate(%g %s) %s" % (
-                capture.group('before'), 
-                -float(capture.group('x')), 
-                capture.group('y'), 
+                capture.group('before'),
+                -float(capture.group('x')),
+                capture.group('y'),
                 capture.group('after'))
 
     return mirrored_transform
@@ -1139,7 +1173,7 @@ def makeSvgLayers(top_layer, transform=None, refdef=None):
 
     layer_control = config.brd['layer-control']
 
-    # Holds SVG layers 
+    # Holds SVG layers
     layers = {}
 
     # Create layers for top and bottom PCB layers
@@ -1150,7 +1184,7 @@ def makeSvgLayers(top_layer, transform=None, refdef=None):
 
         # create SVG layer for PCB layer
         layers[layer_name] = {}
-        element = layers[layer_name]['layer'] = makeSvgLayer(top_layer, 
+        element = layers[layer_name]['layer'] = makeSvgLayer(top_layer,
                                                              layer_name,
                                                              transform,
                                                              None,
@@ -1162,9 +1196,9 @@ def makeSvgLayers(top_layer, transform=None, refdef=None):
             placement_dict = [{"name": "placement", "type": "placement"}]
             assembly_dict = [{"name": "assembly", "type": "assembly"}]
             solderpaste_dict = [{"name": "solderpaste", "type": "solderpaste"}]
-            
+
             # Layer appear in Inkscape first/top to bottom/last
-            sheets = placement_dict + assembly_dict + solderpaste_dict + sheets  
+            sheets = placement_dict + assembly_dict + solderpaste_dict + sheets
 
         for sheet in reversed(sheets):
 
@@ -1184,12 +1218,12 @@ def makeSvgLayers(top_layer, transform=None, refdef=None):
 
             if layer_control[sheet_type]['hide'] == True:
                 style += 'display:none;'
- 
-            tmp = layers[layer_name] 
+
+            tmp = layers[layer_name]
             tmp[sheet_type] = {}
-            element = tmp[sheet_type]['layer'] = makeSvgLayer(parent_layer=tmp['layer'], 
+            element = tmp[sheet_type]['layer'] = makeSvgLayer(parent_layer=tmp['layer'],
                                                               layer_name=sheet_name,
-                                                              transform=None, 
+                                                              transform=None,
                                                               style=style,
                                                               refdef=refdef)
 
@@ -1203,7 +1237,7 @@ def makeSvgLayers(top_layer, transform=None, refdef=None):
             if sheet_type == 'conductor':
                 tmp2 = layers[layer_name]['conductor']
                 conductor_types = ['routing', 'pads', 'pours']
-         
+
                 for cond_type in conductor_types:
                     try:
                         style = utils.dictToStyle(config.stl['layout']['conductor'][cond_type].get(layer_name))
@@ -1216,9 +1250,9 @@ def makeSvgLayers(top_layer, transform=None, refdef=None):
                         style += 'display:none;'
 
                     tmp2[cond_type] = {}
-                    element = tmp2[cond_type]['layer'] = makeSvgLayer(parent_layer=tmp2['layer'], 
+                    element = tmp2[cond_type]['layer'] = makeSvgLayer(parent_layer=tmp2['layer'],
                                                                       layer_name=cond_type,
-                                                                      transform=None, 
+                                                                      transform=None,
                                                                       style=style,
                                                                       refdef=refdef)
 
@@ -1234,9 +1268,9 @@ def makeSvgLayers(top_layer, transform=None, refdef=None):
         if layer_control[info_layer]['hide'] == True:
             style += 'display:none;'
         layers[info_layer] = {}
-        element = layers[info_layer]['layer'] = makeSvgLayer(top_layer, 
+        element = layers[info_layer]['layer'] = makeSvgLayer(top_layer,
                                                              info_layer,
-                                                             transform, 
+                                                             transform,
                                                              style,
                                                              refdef)
         element.set('{'+config.cfg['ns']['pcbmode']+'}%s' % ('sheet'), info_layer)
@@ -1255,19 +1289,19 @@ def makeSvgLayer(parent_layer,
                  style=None,
                  refdef=None):
     """
-    Create and return an Inkscape SVG layer 
+    Create and return an Inkscape SVG layer
     """
 
     new_layer = et.SubElement(parent_layer, 'g')
     new_layer.set('{'+config.cfg['ns']['inkscape']+'}groupmode', 'layer')
     new_layer.set('{'+config.cfg['ns']['inkscape']+'}label', layer_name)
     if transform is not None:
-        new_layer.set('transform', transform) 
+        new_layer.set('transform', transform)
     if style is not None:
         new_layer.set('style', style)
     if refdef is not None:
         new_layer.set('refdef', refdef)
-   
+
     return new_layer
 
 
@@ -1292,7 +1326,7 @@ def create_layers_for_gerber_svg(cfg, top_layer, transform=None, refdef=None):
         # create SVG layer for PCB layer
         layer_id = pcb_layer_name
         board_svg_layers[pcb_layer_name] = {}
-        board_svg_layers[pcb_layer_name]['layer'] = create_svg_layer(cfg, top_layer, 
+        board_svg_layers[pcb_layer_name]['layer'] = create_svg_layer(cfg, top_layer,
                                                                      pcb_layer_name,
                                                                      layer_id,
                                                                      transform,
@@ -1306,15 +1340,15 @@ def create_layers_for_gerber_svg(cfg, top_layer, transform=None, refdef=None):
             # define a layer id
             layer_id = "%s_%s" % (pcb_layer_name, pcb_sheet)
             if refdef is not None:
-                layer_id += "_%s" % refdef 
+                layer_id += "_%s" % refdef
 
             style = utils.dict_to_style(cfg['layout_style'][pcb_sheet]['default'].get(pcb_layer_name))
-            tmp = board_svg_layers[pcb_layer_name] 
+            tmp = board_svg_layers[pcb_layer_name]
             tmp[pcb_sheet] = {}
-            tmp[pcb_sheet]['layer'] = create_svg_layer(cfg, tmp['layer'], 
+            tmp[pcb_sheet]['layer'] = create_svg_layer(cfg, tmp['layer'],
                                                        pcb_sheet,
                                                        layer_id,
-                                                       None, 
+                                                       None,
                                                        style,
                                                        refdef)
 
@@ -1325,14 +1359,14 @@ def create_layers_for_gerber_svg(cfg, top_layer, transform=None, refdef=None):
     # define a layer id
     layer_id = "%s" % (layer_name)
     if refdef is not None:
-        layer_id += "_%s" % refdef 
+        layer_id += "_%s" % refdef
     style = '' #utils.dict_to_style(cfg['layout_style'][layer_name].get('default'))
     board_svg_layers[layer_name] = {}
-    board_svg_layers[layer_name]['layer'] = create_svg_layer(cfg, 
-                                                             top_layer, 
+    board_svg_layers[layer_name]['layer'] = create_svg_layer(cfg,
+                                                             top_layer,
                                                              layer_name,
                                                              layer_id,
-                                                             transform, 
+                                                             transform,
                                                              style,
                                                              refdef)
 
@@ -1341,14 +1375,14 @@ def create_layers_for_gerber_svg(cfg, top_layer, transform=None, refdef=None):
     # define a layer id
     layer_id = "%s" % (layer_name)
     if refdef is not None:
-        layer_id += "_%s" % refdef 
+        layer_id += "_%s" % refdef
     style = utils.dict_to_style(cfg['layout_style'][layer_name].get('default'))
     board_svg_layers[layer_name] = {}
-    board_svg_layers[layer_name]['layer'] = create_svg_layer(cfg, 
-                                                             top_layer, 
+    board_svg_layers[layer_name]['layer'] = create_svg_layer(cfg,
+                                                             top_layer,
                                                              layer_name,
                                                              layer_id,
-                                                             transform, 
+                                                             transform,
                                                              style,
                                                              refdef)
 
@@ -1357,14 +1391,14 @@ def create_layers_for_gerber_svg(cfg, top_layer, transform=None, refdef=None):
     # define a layer id
     layer_id = "%s" % (layer_name)
     if refdef is not None:
-        layer_id += "_%s" % refdef 
+        layer_id += "_%s" % refdef
     style = utils.dict_to_style(cfg['layout_style'][layer_name].get('default'))
     board_svg_layers[layer_name] = {}
-    board_svg_layers[layer_name]['layer'] = create_svg_layer(cfg, 
-                                                             top_layer, 
+    board_svg_layers[layer_name]['layer'] = create_svg_layer(cfg,
+                                                             top_layer,
                                                              layer_name,
                                                              layer_id,
-                                                             transform, 
+                                                             transform,
                                                              style,
                                                              refdef)
 
@@ -1383,8 +1417,8 @@ def rect_to_path(shape):
     width = float(shape['width'])
     height = float(shape['height'])
     radii = shape.get('radii')
-    path = width_and_height_to_path(width, 
-                                    height, 
+    path = width_and_height_to_path(width,
+                                    height,
                                     radii)
 
     return path
@@ -1401,7 +1435,7 @@ def create_meandering_path(params):
 
     deg_to_rad = 2 * pi / 360
 
-    radius = params.get('radius') 
+    radius = params.get('radius')
     theta = params.get('theta')
     width = params.get('trace-width')
     number = params.get('bus-width') or 1
@@ -1433,31 +1467,31 @@ def create_round_meander(radius, theta=0, offset=Point()):
     Returns a single period of a meandering path based on radius
     and angle theta
     """
-    
+
     deg_to_rad = 2 * pi / 360
 
     r = radius
     t = theta * deg_to_rad
-    
+
     # The calculation to obtain the 'k' coefficient can be found here:
     # http://itc.ktu.lt/itc354/Riskus354.pdf
     # "APPROXIMATION OF A CUBIC BEZIER CURVE BY CIRCULAR ARCS AND VICE VERSA"
     # by Aleksas Riskus
     k = 0.5522847498
- 
+
     # the control points need to be shortened relative to the angle by this factor
     j = 2*t/pi
 
     path =  "m %s,%s " % (-2*r*cos(t)-offset.x, -offset.y)
-    path += "c %s,%s %s,%s %s,%s " % (-k*r*j*sin(t),-k*r*j*cos(t), -(r-r*cos(t)),-r*sin(t)+r*k*j, -(r-r*cos(t)),-r*sin(t))     
-    path += "c %s,%s %s,%s %s,%s " % (0,-k*r, r-k*r,-r, r,-r) 
+    path += "c %s,%s %s,%s %s,%s " % (-k*r*j*sin(t),-k*r*j*cos(t), -(r-r*cos(t)),-r*sin(t)+r*k*j, -(r-r*cos(t)),-r*sin(t))
+    path += "c %s,%s %s,%s %s,%s " % (0,-k*r, r-k*r,-r, r,-r)
     path += "c %s,%s %s,%s %s,%s " % (k*r,0, r,r-k*r, r,r)
-    path += "c %s,%s %s,%s %s,%s " % (0,k*r*j, -(r-r*cos(t)-k*r*j*sin(t)),r*sin(t)-r*k*j*cos(t), -r+r*cos(t),r*sin(t))     
-    path += "c %s,%s %s,%s %s,%s " % (-k*r*j*sin(t),k*r*j*cos(t), -(r-r*cos(t)),r*sin(t)-r*k*j, -(r-r*cos(t)),r*sin(t)) 
-    path += "c %s,%s %s,%s %s,%s " % (0,k*r, r-k*r,r, r,r) 
+    path += "c %s,%s %s,%s %s,%s " % (0,k*r*j, -(r-r*cos(t)-k*r*j*sin(t)),r*sin(t)-r*k*j*cos(t), -r+r*cos(t),r*sin(t))
+    path += "c %s,%s %s,%s %s,%s " % (-k*r*j*sin(t),k*r*j*cos(t), -(r-r*cos(t)),r*sin(t)-r*k*j, -(r-r*cos(t)),r*sin(t))
+    path += "c %s,%s %s,%s %s,%s " % (0,k*r, r-k*r,r, r,r)
     path += "c %s,%s %s,%s %s,%s " % (k*r,0, r,-r+k*r, r,-r)
-    path += "c %s,%s %s,%s %s,%s "  % (0,-k*r*j, -(r-r*cos(t)-k*r*j*sin(t)),-r*sin(t)+r*k*j*cos(t), -r+r*cos(t),-r*sin(t))     
-                 
+    path += "c %s,%s %s,%s %s,%s "  % (0,-k*r*j, -(r-r*cos(t)-k*r*j*sin(t)),-r*sin(t)+r*k*j*cos(t), -r+r*cos(t),-r*sin(t))
+
     return path
 
 
@@ -1471,7 +1505,7 @@ def calculate_cubic_bezier_length(px, py):
 
     length = 0.0;
 
-    prev = Point(px[0], py[0]) 
+    prev = Point(px[0], py[0])
 
     for i in range(1, len(px)):
         length += sqrt((px[i] - prev.x)**2 + (py[i] - prev.y)**2)
