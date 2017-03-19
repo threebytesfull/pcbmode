@@ -349,7 +349,7 @@ def relative_svg_path_to_absolute_coord_list(path, bezier_steps=100, segment_len
                     bezier_points_y.append(bezier_curve_path[n+m].y)
 
 
-                # caluclate the individual points along the bezier curve for 'x'
+                # calculate the individual points along the bezier curve for 'x'
                 # and 'y'
                 points_x = calculate_points_of_cubic_bezier(bezier_points_x, bezier_steps)
                 points_y = calculate_points_of_cubic_bezier(bezier_points_y, bezier_steps)
@@ -363,7 +363,7 @@ def relative_svg_path_to_absolute_coord_list(path, bezier_steps=100, segment_len
 
                 bezier_point_array = []
 
-                # put thos points back into a Point type array
+                # put those points back into a Point type array
                 for n in range(0, len(points_x), skip):
                     bezier_point_array.append(Point(points_x[n], points_y[n]))
                 bezier_point_array.append(Point(points_x[len(points_x)-1], points_y[len(points_x)-1]))
@@ -405,7 +405,7 @@ def relative_svg_path_to_absolute_coord_list(path, bezier_steps=100, segment_len
                     bezier_points_y.append(bezier_curve_path[n+m].y)
 
 
-                # caluclate the individual points along the bezier curve for 'x'
+                # calculate the individual points along the bezier curve for 'x'
                 # and 'y'
                 points_x = calculate_points_of_cubic_bezier(bezier_points_x, bezier_steps)
                 points_y = calculate_points_of_cubic_bezier(bezier_points_y, bezier_steps)
@@ -455,7 +455,7 @@ def relative_svg_path_to_absolute_coord_list(path, bezier_steps=100, segment_len
                     bezier_points_x.append(bezier_curve_path[n+m].x)
                     bezier_points_y.append(bezier_curve_path[n+m].y)
 
-                # caluclate the individual points along the bezier curve for 'x'
+                # calculate the individual points along the bezier curve for 'x'
                 # and 'y'
                 points_x = calculate_points_of_cubic_bezier(bezier_points_x, bezier_steps)
                 points_y = calculate_points_of_cubic_bezier(bezier_points_y, bezier_steps)
@@ -664,7 +664,7 @@ def calculate_bounding_box_of_path(path):
                     bezier_points_x.append(bezier_curve_path[n+m].x)
                     bezier_points_y.append(bezier_curve_path[n+m].y)
 
-                # caluclate the individual points along the bezier curve for 'x'
+                # calculate the individual points along the bezier curve for 'x'
                 # and 'y'
                 points_x = calculate_points_of_cubic_bezier(bezier_points_x, 100)
                 points_y = calculate_points_of_cubic_bezier(bezier_points_y, 100)
@@ -716,7 +716,7 @@ def calculate_bounding_box_of_path(path):
                     bezier_points_x.append(bezier_curve_path[n+m].x)
                     bezier_points_y.append(bezier_curve_path[n+m].y)
 
-                # caluclate the individual points along the bezier curve for 'x'
+                # calculate the individual points along the bezier curve for 'x'
                 # and 'y'
                 points_x = calculate_points_of_cubic_bezier(bezier_points_x, 100)
                 points_y = calculate_points_of_cubic_bezier(bezier_points_y, 100)
@@ -767,7 +767,7 @@ def calculate_bounding_box_of_path(path):
                     bezier_points_x.append(bezier_curve_path[n+m].x)
                     bezier_points_y.append(bezier_curve_path[n+m].y)
 
-                # caluclate the individual points along the bezier curve for 'x'
+                # calculate the individual points along the bezier curve for 'x'
                 # and 'y'
                 points_x = calculate_points_of_cubic_bezier(bezier_points_x, 100)
                 points_y = calculate_points_of_cubic_bezier(bezier_points_y, 100)
@@ -891,7 +891,7 @@ def transform_path(p, center=False, scale=1, rotate_angle=0, rotate_point=Point(
         # center point of path
         origin_point = Point(p_tl.x+width/2, p_tl.y-height/2)
 
-        # caluclate what's the new starting point of path based on the new origin
+        # calculate what's the new starting point of path based on the new origin
         new_first_point = Point(first_point.x - origin_point.x, first_point.y - origin_point.y)
     else:
         new_first_point = Point(first_point.x, first_point.y)

@@ -238,7 +238,7 @@ class SvgPath():
                         coord.assign(coord_tmp[0], coord_tmp[1])
                         p += str(coord.x) + ',' + str(coord.y) +' '
                     # for keeping track of the absolute position, we need to add up every
-                    # *third* coordinate of the cubic Bezier curve
+                    # *second* coordinate of the quadratic Bezier curve
                     for coord_tmp in path[i][2::2]:
                         coord.assign(coord_tmp[0], coord_tmp[1])
                         abspos += coord
@@ -452,7 +452,7 @@ class SvgPath():
                         bezier_points_x.append(bezier_curve_path[n+m].x)
                         bezier_points_y.append(bezier_curve_path[n+m].y)
 
-                    # caluclate the individual points along the bezier curve for 'x'
+                    # calculate the individual points along the bezier curve for 'x'
                     # and 'y'
                     points_x = svg.calculate_points_of_cubic_bezier(bezier_points_x, 100)
                     points_y = svg.calculate_points_of_cubic_bezier(bezier_points_y, 100)
@@ -504,7 +504,7 @@ class SvgPath():
                         bezier_points_x.append(bezier_curve_path[n+m].x)
                         bezier_points_y.append(bezier_curve_path[n+m].y)
 
-                    # caluclate the individual points along the bezier curve for 'x'
+                    # calculate the individual points along the bezier curve for 'x'
                     # and 'y'
                     points_x = svg.calculate_points_of_cubic_bezier(bezier_points_x, 100)
                     points_y = svg.calculate_points_of_cubic_bezier(bezier_points_y, 100)
@@ -555,7 +555,7 @@ class SvgPath():
                         bezier_points_x.append(bezier_curve_path[n+m].x)
                         bezier_points_y.append(bezier_curve_path[n+m].y)
 
-                    # caluclate the individual points along the bezier curve for 'x'
+                    # calculate the individual points along the bezier curve for 'x'
                     # and 'y'
                     points_x = svg.calculate_points_of_cubic_bezier(bezier_points_x, 100)
                     points_y = svg.calculate_points_of_cubic_bezier(bezier_points_y, 100)
@@ -648,7 +648,7 @@ class SvgPath():
                 # center point of path
                 origin_point = Point(self._bbox_top_left.x+width/2, self._bbox_top_left.y-height/2)
 
-                # caluclate what's the new starting point of path based on the new origin
+                # calculate what's the new starting point of path based on the new origin
                 new_first_point = Point(first_point.x - origin_point.x, first_point.y - origin_point.y)
             else:
                 new_first_point = Point(first_point.x, first_point.y)
@@ -851,7 +851,7 @@ class SvgPath():
                         bezier_points_y.append(bezier_curve_path[n+m].y)
 
 
-                    # caluclate the individual points along the bezier curve for 'x'
+                    # calculate the individual points along the bezier curve for 'x'
                     # and 'y'
                     points_x = self._linearizeCubicBezier(bezier_points_x, steps)
                     points_y = self._linearizeCubicBezier(bezier_points_y, steps)
@@ -908,7 +908,7 @@ class SvgPath():
                         bezier_points_y.append(bezier_curve_path[n+m].y)
 
 
-                    # caluclate the individual points along the bezier curve for 'x'
+                    # calculate the individual points along the bezier curve for 'x'
                     # and 'y'
                     points_x = self._linearizeCubicBezier(bezier_points_x, steps)
                     points_y = self._linearizeCubicBezier(bezier_points_y, steps)
@@ -958,7 +958,7 @@ class SvgPath():
                         bezier_points_x.append(bezier_curve_path[n+m].x)
                         bezier_points_y.append(bezier_curve_path[n+m].y)
 
-                    # caluclate the individual points along the bezier curve for 'x'
+                    # calculate the individual points along the bezier curve for 'x'
                     # and 'y'
                     points_x = self._linearizeCubicBezier(bezier_points_x, steps)
                     points_y = self._linearizeCubicBezier(bezier_points_y, steps)
