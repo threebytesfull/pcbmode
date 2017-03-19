@@ -286,7 +286,7 @@ def make_bom(quantity=None):
 
     with open(bom_html, "wb") as f:
         for line in html:
-            f.write(line+'\n')
+            f.write((line+'\n').encode())
 
 
     #print bom_dict
