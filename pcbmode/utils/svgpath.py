@@ -9,7 +9,7 @@ from . import messages as msg
 
 # import pcbmode modules
 from . import utils
-from . import svg
+from pcbmode.utils.path_utils import boundary_box_check, calculate_points_of_quadratic_bezier, calculate_points_of_cubic_bezier, calculate_length_of_path_points
 from pcbmode.utils.svg_grammar import SvgGrammar
 from .point import Point
 
@@ -369,7 +369,7 @@ class SvgPath():
                 else:
                     new_point = Point(path[i][1][0], path[i][1][1])
                     abs_point += new_point
-                    bbox_top_left, bbox_bot_right = svg.boundary_box_check(bbox_top_left,
+                    bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left,
                                                                        bbox_bot_right,
                                                                        abs_point)
 
@@ -377,7 +377,7 @@ class SvgPath():
                 for coord in path[i][2:]:
                     new_point = Point(coord[0], coord[1])
                     abs_point += new_point
-                    bbox_top_left, bbox_bot_right = svg.boundary_box_check(bbox_top_left,
+                    bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left,
                                                                        bbox_bot_right,
                                                                        abs_point)
 
@@ -410,8 +410,8 @@ class SvgPath():
 
                     # calculate the individual points along the bezier curve for 'x'
                     # and 'y'
-                    points_x = svg.calculate_points_of_cubic_bezier(bezier_points_x, 100)
-                    points_y = svg.calculate_points_of_cubic_bezier(bezier_points_y, 100)
+                    points_x = calculate_points_of_cubic_bezier(bezier_points_x, 100)
+                    points_y = calculate_points_of_cubic_bezier(bezier_points_y, 100)
 
                     bezier_point_array = []
 
@@ -421,7 +421,7 @@ class SvgPath():
 
                     # check each point if it extends the boundary box
                     for n in range(0, len(bezier_point_array)):
-                        bbox_top_left, bbox_bot_right = svg.boundary_box_check(
+                        bbox_top_left, bbox_bot_right = boundary_box_check(
                             bbox_top_left,
                             bbox_bot_right,
                             bezier_point_array[n])
@@ -452,12 +452,12 @@ class SvgPath():
 
                     # calculate the individual points along the bezier curve for 'x'
                     # and 'y'
-                    points_x = svg.calculate_points_of_quadratic_bezier(bezier_points_x, 100)
-                    points_y = svg.calculate_points_of_quadratic_bezier(bezier_points_y, 100)
+                    points_x = calculate_points_of_quadratic_bezier(bezier_points_x, 100)
+                    points_y = calculate_points_of_quadratic_bezier(bezier_points_y, 100)
 
                     # check each point if it extends the boundary box
                     for point in (Point(points_x[n], points_y[n]) for n in range(len(points_x))):
-                        bbox_top_left, bbox_bot_right = svg.boundary_box_check(
+                        bbox_top_left, bbox_bot_right = boundary_box_check(
                                 bbox_top_left,
                                 bbox_bot_right,
                                 point)
@@ -497,8 +497,8 @@ class SvgPath():
 
                     # calculate the individual points along the bezier curve for 'x'
                     # and 'y'
-                    points_x = svg.calculate_points_of_cubic_bezier(bezier_points_x, 100)
-                    points_y = svg.calculate_points_of_cubic_bezier(bezier_points_y, 100)
+                    points_x = calculate_points_of_cubic_bezier(bezier_points_x, 100)
+                    points_y = calculate_points_of_cubic_bezier(bezier_points_y, 100)
 
                     bezier_point_array = []
 
@@ -508,7 +508,7 @@ class SvgPath():
 
                     # check each point if it extends the boundary box
                     for m in range(0, len(bezier_point_array)):
-                        bbox_top_left, bbox_bot_right = svg.boundary_box_check(
+                        bbox_top_left, bbox_bot_right = boundary_box_check(
                                 bbox_top_left,
                                 bbox_bot_right,
                                 bezier_point_array[m])
@@ -523,7 +523,7 @@ class SvgPath():
                 for coord in path[i][1:]:
                     new_point = Point(coord[0], coord[1])
                     abs_point += new_point
-                    bbox_top_left, bbox_bot_right = svg.boundary_box_check(bbox_top_left,
+                    bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left,
                                                                        bbox_bot_right,
                                                                        abs_point)
 
@@ -532,7 +532,7 @@ class SvgPath():
                 for coord in path[i][1:]:
                     new_point = Point(coord[0], 0)
                     abs_point += new_point
-                    bbox_top_left, bbox_bot_right = svg.boundary_box_check(bbox_top_left,
+                    bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left,
                                                                        bbox_bot_right,
                                                                        abs_point)
 
@@ -541,7 +541,7 @@ class SvgPath():
                 for coord in path[i][1:]:
                     new_point = Point(0, coord[0])
                     abs_point += new_point
-                    bbox_top_left, bbox_bot_right = svg.boundary_box_check(bbox_top_left,
+                    bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left,
                                                                        bbox_bot_right,
                                                                        abs_point)
 
@@ -748,10 +748,10 @@ class SvgPath():
 
                     # calculate the individual points along the bezier curve for 'x'
                     # and 'y'
-                    points_x = svg.calculate_points_of_cubic_bezier(bezier_points_x, steps)
-                    points_y = svg.calculate_points_of_cubic_bezier(bezier_points_y, steps)
+                    points_x = calculate_points_of_cubic_bezier(bezier_points_x, steps)
+                    points_y = calculate_points_of_cubic_bezier(bezier_points_y, steps)
 
-                    path_length = svg.calculate_length_of_path_points(points_x, points_y)
+                    path_length = calculate_length_of_path_points(points_x, points_y)
 
                     if path_length == 0:
                         steps_tmp = 1
@@ -801,10 +801,10 @@ class SvgPath():
 
                     # calculate the individual points along the bezier curve for 'x'
                     # and 'y'
-                    points_x = svg.calculate_points_of_quadratic_bezier(bezier_points_x, steps)
-                    points_y = svg.calculate_points_of_quadratic_bezier(bezier_points_y, steps)
+                    points_x = calculate_points_of_quadratic_bezier(bezier_points_x, steps)
+                    points_y = calculate_points_of_quadratic_bezier(bezier_points_y, steps)
 
-                    path_length = svg.calculate_length_of_path_points(points_x, points_y)
+                    path_length = calculate_length_of_path_points(points_x, points_y)
                     skip = int(ceil(steps / (path_length / length)))
 
                     bezier_point_array = []
@@ -851,10 +851,10 @@ class SvgPath():
 
                     # calculate the individual points along the bezier curve for 'x'
                     # and 'y'
-                    points_x = svg.calculate_points_of_cubic_bezier(bezier_points_x, steps)
-                    points_y = svg.calculate_points_of_cubic_bezier(bezier_points_y, steps)
+                    points_x = calculate_points_of_cubic_bezier(bezier_points_x, steps)
+                    points_y = calculate_points_of_cubic_bezier(bezier_points_y, steps)
 
-                    path_length = svg.calculate_length_of_path_points(points_x, points_y)
+                    path_length = calculate_length_of_path_points(points_x, points_y)
                     skip = int(ceil(steps / (path_length / length)))
 
                     bezier_point_array = []
