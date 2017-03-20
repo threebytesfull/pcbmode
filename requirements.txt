@@ -1,3 +1,5 @@
-coverage
 lxml
 pyparsing
+coverage
+pathlib2; python_version < '3.5.0'
+unittest2; python_version < '3.6.0'
