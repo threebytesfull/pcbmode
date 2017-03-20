@@ -31,7 +31,7 @@ class TestSvgPath(unittest.TestCase):
         with self.assertRaises(Exception):
             path = SvgPath('F9 9 9')
 
-    @patch('pcbmode.utils.svgpath.SvgPath._makeSVGGrammar')
+    @patch('pcbmode.utils.svgpath._make_svg_grammar')
     def test_would_notify_unhandled_but_parsed_command_in_make_relative(self, grammar_method):
         """If the parser matched an element not handled in the if statements, it should be notified at the bottom"""
         fake_grammar = PP.Group(PP.Literal('B') + PP.Group(PP.Word('12345') * 2))
