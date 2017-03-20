@@ -7,9 +7,10 @@ python:
     - "nightly"
 install:
     - pip install -r requirements.txt
-    - pip install coveralls
+    - pip install coveralls codecov
 script:
     - git fetch --unshallow
     - coverage run setup.py test
 after_success:
     - coveralls
+    - codecov
