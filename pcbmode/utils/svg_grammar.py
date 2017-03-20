@@ -45,6 +45,8 @@ class SvgGrammar(object):
 
             self.grammar = PP.OneOrMore(PP.Group(path_cmd))
 
+            self.parseString = self.grammar.parseString
+
     instance = None
 
     def __new__(cls):

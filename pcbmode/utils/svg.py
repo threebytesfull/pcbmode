@@ -13,17 +13,6 @@ from .svg_grammar import SvgGrammar
 
 
 
-def svg_grammar():
-    """
-    Returns the grammar used to parse SVG paths
-    """
-    return SvgGrammar().grammar
-
-
-
-
-
-
 def absolute_to_relative_path(path):
     """
     Converts an SVG path into a path that has only relative commands.
@@ -37,11 +26,8 @@ def absolute_to_relative_path(path):
     if (path == None) or (path == ''):
         return
 
-    # get SVG path grammar
-    look_for = svg_grammar()
-
-    # parse the input based on this grammar
-    pd = look_for.parseString(path)
+    # parse the input with SVG path grammar
+    pd = SvgGrammar().parseString(path)
 
     p = ''
 
@@ -251,11 +237,8 @@ def calculate_bounding_box_of_path(path):
     # convert path to relative
     relative_path = absolute_to_relative_path(path)
 
-    # get SVG path grammar
-    look_for = svg_grammar()
-
-    # parse the input based on this grammar
-    pd = look_for.parseString(relative_path)
+    # parse the input with SVG path grammar
+    pd = SvgGrammar().parseString(path)
 
     last_point = Point()
     abs_point = Point()
@@ -571,11 +554,8 @@ def transform_path(p, center=False, scale=1, rotate_angle=0, rotate_point=Point(
 
     width, height = get_width_and_height_of_shape_from_two_points(p_tl, p_br)
 
-    # get SVG path grammar
-    look_for = svg_grammar()
-
-    # parse the input based on this grammar
-    pd = look_for.parseString(p)
+    # parse the input with SVG path grammar
+    pd = SvgGrammar().parseString(path)
 
     # first point of path
     first_point = Point(pd[0][1][0], pd[0][1][1])

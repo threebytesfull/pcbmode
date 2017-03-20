@@ -96,3 +96,14 @@ class TestSvgGrammar(unittest.TestCase):
             with self.subTest(path=path):
                 parse_result = grammar.parseString(path)
 
+    def test_grammar_parser_is_reused(self):
+        svg_grammar1 = SvgGrammar()
+        svg_grammar2 = SvgGrammar()
+        self.assertIsNotNone(svg_grammar1.grammar, 'should get a grammar parser')
+        self.assertIs(svg_grammar1.grammar, svg_grammar2.grammar, 'grammar object should share parser instance')
+
+    def test_parse_string(self):
+        g = SvgGrammar()
+        self.assertTrue(hasattr(g, 'parseString'), 'grammar should have a parseString method')
+        path = g.parseString('M 1 2')
+        self.assertIsNotNone(path, 'should parse an SVG string')
