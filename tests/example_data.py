@@ -2,9 +2,9 @@ import os
 import pkg_resources
 
 try:
-    from pathlib import Path
-except ImportError:
     from pathlib2 import Path
+except ImportError:
+    from pathlib import Path
 
 class ExampleData(object):
     def __init__(self, *path_components):

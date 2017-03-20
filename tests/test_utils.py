@@ -1,11 +1,18 @@
-from unittest import TestCase
-from unittest.mock import Mock, patch, mock_open
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
+
+try:
+    from unittest.mock import Mock, patch, mock_open
+except ImportError:
+    from mock import Mock, patch, mock_open
 
 from pcbmode.utils import utils
 from pcbmode.utils.point import Point
 from pcbmode.config import Config
 
-class TestUtils(TestCase):
+class TestUtils(unittest.TestCase):
     """Test utils class"""
 
     def setUp(self):

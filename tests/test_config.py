@@ -1,5 +1,12 @@
-import unittest
-from unittest.mock import patch
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 import os
 import pkg_resources
@@ -109,14 +116,14 @@ class TestConfig(unittest.TestCase):
     @patch('pcbmode.config.Config._default_config_filename', 'no_such_file.json')
     def test_load_defaults_with_missing_global_file(self, e):
         self.c.load_defaults()
-        e.assert_called_once()
+        self.assertTrue(e.called, 'msg.error should have been called')
         self.assertRegex(e.call_args[0][0], r"Couldn't open PCBmodE's configuration file no_such_file\.json")
 
     @patch('pcbmode.utils.messages.error')
     @patch('pcbmode.config.Config._default_config_filename', 'global_defaults.json')
     def test_load_defaults_with_custom_missing_file(self, e):
         self.c.load_defaults(filename='missing_config_file.json')
-        e.assert_called_once()
+        self.assertTrue(e.called, 'msg.error should have been called')
         message_lines = e.call_args[0][0].split('\n')
         self.assertRegex(message_lines[0], r"Couldn't open PCBmodE's configuration file missing_config_file.json.", 'should get missing config message')
         self.assertRegex(message_lines[1], r"missing_config_file.json", 'should look for specified config file first')
@@ -185,7 +192,7 @@ class TestConfig(unittest.TestCase):
     def test_stackup_raises_error_on_missing_stackup(self, e):
         self.assertEqual(self.c.stk, {}, 'should start with empty stackup data')
         self.c.load_defaults()
-        e.assert_called_once()
+        self.assertTrue(e.called, 'msg.error should have been called')
         self.assertRegex(e.call_args[0][0], r"Couldn't open JSON file:")
 
     def test_stackup_load_sets_layers_dict(self):

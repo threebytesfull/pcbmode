@@ -1,4 +1,7 @@
-import unittest
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
 
 from tests.example_data import ExampleData
 

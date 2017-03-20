@@ -1,5 +1,12 @@
-import unittest
-from unittest.mock import patch
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 from pcbmode.utils.style import Style
 from pcbmode.config import Config
@@ -75,6 +82,6 @@ class TestStyle(unittest.TestCase):
     @patch('pcbmode.utils.messages.error')
     def test_unknown_style_for_rect_on_silkscreen_sublayer(self, e):
         style = Style({'type': 'rect', 'style': 'unknown', 'stroke-width': 0.5}, 'silkscreen', 'refdef')
-        e.assert_called_once()
+        self.assertTrue(e.called)
         self.assertRegex(e.call_args[0][0], r"Encountered an unknown 'style' type")
 
