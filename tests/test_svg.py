@@ -106,12 +106,6 @@ class TestPcbmode(unittest.TestCase):
     def test_absolute_to_relative_path(self):
         pass
 
-    def test_relative_svg_path_to_absolute_coord_list(self):
-        pass
-
-    def test_mirror_path_over_axis(self):
-        pass
-
     def test_boundary_box_check(self):
         pass
 
