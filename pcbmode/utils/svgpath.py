@@ -25,15 +25,15 @@ class SvgPath():
         digest = utils.digest(path)
         self._record = config.pth.get(digest)
 
-        self._svgGrammar = SvgGrammar().grammar
+        self._svg_grammar = SvgGrammar().grammar
 
         if self._record == None:
-            self._original_parsed = self._svgGrammar.parseString(self._original)
+            self._original_parsed = self.grammar.parseString(self._original)
             self._original_parsed = self._parseResultsToList(self._original_parsed)
             self._first_point = ([self._original_parsed[0][1][0],
                                   self._original_parsed[0][1][1]])
             self._relative = self._makeRelative(self._original_parsed)
-            self._relative_parsed = self._svgGrammar.parseString(self._relative)
+            self._relative_parsed = self.grammar.parseString(self._relative)
             self._relative_parsed = self._parseResultsToList(self._relative_parsed)
             self._width, self._height = self._getDimensions(self._relative_parsed)
             config.pth[digest] = {}
@@ -49,6 +49,10 @@ class SvgPath():
             self._relative_parsed = self._record['relative-parsed']
             self._width = self._record['width']
             self._height = self._record['height']
+
+    @property
+    def grammar(self):
+        return self._svg_grammar
 
 
 
@@ -622,7 +626,7 @@ class SvgPath():
                         new_p += str(tmpp.x) + "," + str(tmpp.y) + " "
 
 
-            parsed = self._svgGrammar.parseString(new_p)
+            parsed = self.grammar.parseString(new_p)
             mirrored = self._mirrorHorizontally(parsed)
 
             if mirror == False:

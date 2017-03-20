@@ -55,12 +55,18 @@ class TestSvgPath(unittest.TestCase):
             self.assertEqual(path.getNumberOfSegments(), expected_results['num_segments'], 'should get correct number of segments')
         return path
 
+    def test_svg_paths_share_grammar_instance(self):
+        path = SvgPath('M 1 2')
+        self.assertTrue(hasattr(path, 'grammar'), 'path should have a grammar property')
+        path2 = SvgPath('M 3 4')
+        self.assertIs(path2.grammar, path.grammar, 'paths should share grammar instance')
+
     def test_svg_path_from_same_svg_string(self):
         svg_string = 'M 9 8'
         path = SvgPath(svg_string)
         self.assertEqual(path.getOriginal(), svg_string, 'getOriginal should return original SVG path')
         path2 = SvgPath(svg_string)
-        self.assertIs(path.getFirstPoint(), path2.getFirstPoint(), 'should get same path first point object')
+        self.assertIs(path.getFirstPoint(), path2.getFirstPoint(), 'should get same path as first point object')
 
     def test_svg_path_from_move_single(self):
         self.assertPathParses('M 1 2', {

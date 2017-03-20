@@ -14,6 +14,13 @@ from pcbmode.utils.svg import *
 class TestPcbmode(unittest.TestCase):
     """Test pcbmode script"""
 
+    def test_svg_grammar(self):
+        grammar = svg_grammar()
+        self.assertIsNotNone(grammar, 'should get grammar object')
+        self.assertTrue(hasattr(grammar, 'parseString'), 'should have parseString method')
+        grammar2 = svg_grammar()
+        self.assertIs(grammar2, grammar, 'should reuse existing grammar instance')
+
     def test_absolute_to_relative_path(self):
         pass
 
