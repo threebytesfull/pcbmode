@@ -637,25 +637,6 @@ def create_round_meander(radius, theta=0, offset=Point()):
 
 
 
-def calculate_cubic_bezier_length(px, py):
-    """
-    Return the length of a cubic bezier
-    """
-
-    length = 0.0;
-
-    prev = Point(px[0], py[0])
-
-    for i in range(1, len(px)):
-        length += sqrt((px[i] - prev.x)**2 + (py[i] - prev.y)**2)
-        prev = Point(px[i], py[i])
-
-    return length
-
-
-
-
-
 def coord_list_to_svg_path(coord_list):
     """
     Turn a list of points into an SVG path

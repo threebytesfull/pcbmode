@@ -68,8 +68,5 @@ class TestPcbmode(unittest.TestCase):
     def test_create_round_meander(self):
         pass
 
-    def test_calculate_cubic_bezier_length(self):
-        pass
-
     def test_coord_list_to_svg_path(self):
         pass
