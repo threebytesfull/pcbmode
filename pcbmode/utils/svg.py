@@ -632,30 +632,3 @@ def create_round_meander(radius, theta=0, offset=Point()):
     path += "c %s,%s %s,%s %s,%s "  % (0,-k*r*j, -(r-r*cos(t)-k*r*j*sin(t)),-r*sin(t)+r*k*j*cos(t), -r+r*cos(t),-r*sin(t))
 
     return path
-
-
-
-
-
-def coord_list_to_svg_path(coord_list):
-    """
-    Turn a list of points into an SVG path
-    """
-
-    path = '' #'M 0,0 '# % (coord_list[0]['coord'].x, coord_list[0]['coord'].y)
-    last_action_type = ''
-
-    for action in coord_list:
-        if action['type'] == 'move':
-            if last_action_type != 'M':
-                path += 'M '
-            path += '%s,%s ' % (action['coord'].x, -action['coord'].y)
-            last_action_type = 'M'
-        if action['type'] == 'draw':
-            if last_action_type != 'L':
-                path += 'L '
-            path += '%s,%s ' % (action['coord'].x, -action['coord'].y)
-            last_action_type = 'L'
-
-    return path
-
