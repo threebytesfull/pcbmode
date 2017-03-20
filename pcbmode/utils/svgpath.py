@@ -54,6 +54,13 @@ class SvgPath():
     def grammar(self):
         return self._svg_grammar
 
+    @property
+    def top_left(self):
+        return self._bbox_top_left
+
+    @property
+    def bottom_right(self):
+        return self._bbox_bot_right
 
 
 
