@@ -152,14 +152,14 @@ class TestPathUtils(unittest.TestCase):
                     with self.subTest(steps=steps):
                         x_coords_out = calculate_points_of_quadratic_bezier(x_coords_in, steps=steps)
                         y_coords_out = calculate_points_of_quadratic_bezier(y_coords_in, steps=steps)
-                        points = list(zip(x_coords_out, y_coords_out))
-                        self.assertEqual(len(points), steps+1) # TODO: should this really be +1?
+                        self.assertEqual(len(x_coords_out), steps+1) # TODO: should this really be +1?
+                        self.assertEqual(len(y_coords_out), steps+1) # TODO: should this really be +1?
                         # check points against quadratic bezier formula
                         delta_t = 1.0/steps
                         for step in range(steps):
                             t = delta_t*step
-                            calc_x = quadratic_bezier_point(*x_coords_in, t)
-                            calc_y = quadratic_bezier_point(*y_coords_in, t)
+                            calc_x = quadratic_bezier_point(*(x_coords_in + (t,)))
+                            calc_y = quadratic_bezier_point(*(y_coords_in + (t,)))
                             self.assertAlmostEqual(x_coords_out[step], calc_x, delta=1e-12)
                             self.assertAlmostEqual(y_coords_out[step], calc_y, delta=1e-12)
 
@@ -188,13 +188,13 @@ class TestPathUtils(unittest.TestCase):
                     with self.subTest(steps=steps):
                         x_coords_out = calculate_points_of_cubic_bezier(x_coords_in, steps=steps)
                         y_coords_out = calculate_points_of_cubic_bezier(y_coords_in, steps=steps)
-                        points = list(zip(x_coords_out, y_coords_out))
-                        self.assertEqual(len(points), steps+1) # TODO: should this really be +1?
+                        self.assertEqual(len(x_coords_out), steps+1) # TODO: should this really be +1?
+                        self.assertEqual(len(y_coords_out), steps+1) # TODO: should this really be +1?
                         # check points against cubic bezier formula
                         delta_t = 1.0/steps
                         for step in range(steps):
                             t = delta_t*step
-                            calc_x = cubic_bezier_point(*x_coords_in, t)
-                            calc_y = cubic_bezier_point(*y_coords_in, t)
+                            calc_x = cubic_bezier_point(*(x_coords_in + (t,)))
+                            calc_y = cubic_bezier_point(*(y_coords_in + (t,)))
                             self.assertAlmostEqual(x_coords_out[step], calc_x, delta=1e-12)
                             self.assertAlmostEqual(y_coords_out[step], calc_y, delta=1e-12)
