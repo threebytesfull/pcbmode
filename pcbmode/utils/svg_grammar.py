@@ -53,7 +53,3 @@ class SvgGrammar(object):
         if not SvgGrammar.instance:
             SvgGrammar.instance = SvgGrammar.__SvgGrammar()
         return SvgGrammar.instance
-
-    @property
-    def grammar(self):
-        return self.instance.grammar

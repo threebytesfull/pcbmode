@@ -13,6 +13,7 @@ import pyparsing as PP
 
 from pcbmode.config import Config
 from pcbmode.utils.svgpath import SvgPath
+from pcbmode.utils.svg_grammar import SvgGrammar
 
 class TestSvgPath(unittest.TestCase):
     """Test SvgPath module"""
@@ -31,16 +32,19 @@ class TestSvgPath(unittest.TestCase):
         with self.assertRaises(Exception):
             path = SvgPath('F9 9 9')
 
-    @patch('pcbmode.utils.svg_grammar.SvgGrammar.grammar')
-    def test_would_notify_unhandled_but_parsed_command_in_make_relative(self, grammar_method):
+    def test_would_notify_unhandled_but_parsed_command_in_make_relative(self):
         """If the parser matched an element not handled in the if statements, it should be notified at the bottom"""
-        fake_grammar = PP.Group(PP.Literal('B') + PP.Group(PP.Word('12345') * 2))
-        grammar_method.return_value = fake_grammar
-        with self.assertRaises(Exception):
-            with patch('sys.stdout', new=io.StringIO()) as fake_out:
-                path = SvgPath('B 234 567')
-                self.assertEqual(fake_out.getValue(), 'ERROR: found an unsupported SVG path command B')
-            # it will go on to fail later, so just ignore that
+        # fake a property because patch doesn't see the inner class being returned
+        # TODO: find a better way to do this without needing SvgGrammar here...
+        SvgGrammar.grammar = None
+        with patch('pcbmode.utils.svg_grammar.SvgGrammar.grammar') as grammar_method:
+            fake_grammar = PP.Group(PP.Literal('B') + PP.Group(PP.Word('12345') * 2))
+            grammar_method.return_value = fake_grammar
+            with self.assertRaises(Exception):
+                with patch('sys.stdout', new=io.StringIO()) as fake_out:
+                    path = SvgPath('B 234 567')
+                    self.assertEqual(fake_out.getValue(), 'ERROR: found an unsupported SVG path command B')
+                # it will go on to fail later, so just ignore that
 
     def assertPathParses(self, svg_string, expected_results):
         path = SvgPath(svg_string)
