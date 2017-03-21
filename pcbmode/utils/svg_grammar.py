@@ -54,12 +54,6 @@ class SvgGrammar(object):
             SvgGrammar.instance = SvgGrammar.__SvgGrammar()
         return SvgGrammar.instance
 
-    def __getattr__(self, name):
-        return getattr(self.instance, name)
-
-    def __setattr__(self, name):
-        return setattr(self.instance, name)
-
     @property
     def grammar(self):
         return self.instance.grammar
