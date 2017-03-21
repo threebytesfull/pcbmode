@@ -50,56 +50,13 @@ def transform_path(p, center=False, scale=1, rotate_angle=0, rotate_point=Point(
     transforms a path
     """
 
-    p_tl, p_br = calculate_bounding_box_of_path(p)
+    svg_path = SvgPath(p)
 
-    width, height = get_width_and_height_of_shape_from_two_points(p_tl, p_br)
+    # old interface doesn't support mirroring, so don't pass it through
+    svg_path.transform(scale=scale, rotate_angle=rotate_angle, rotate_point=rotate_point, center=center)
 
-    # parse the input with SVG path grammar
-    pd = SvgGrammar().parseString(path)
-
-    # first point of path
-    first_point = Point(pd[0][1][0], pd[0][1][1])
-
-    if center is True:
-        # center point of path
-        origin_point = Point(p_tl.x+width/2, p_tl.y-height/2)
-
-        # calculate what's the new starting point of path based on the new origin
-        new_first_point = Point(first_point.x - origin_point.x, first_point.y - origin_point.y)
-    else:
-        new_first_point = Point(first_point.x, first_point.y)
-
-    new_first_point.rotate(rotate_angle, rotate_point)
-    new_first_point.mult(scale)
-    new_p = "m %f,%f " % (new_first_point.x, new_first_point.y)
-
-    tmpp = Point()
-    origin = Point()
-
-    for n in range(0, len(pd)):
-        if pd[n][0] == 'm' and n == 0:
-            for m in range(2, len(pd[n])):
-                tmpp.assign(pd[n][m][0], pd[n][m][1])
-                tmpp.rotate(rotate_angle, rotate_point)
-                tmpp.mult(scale)
-                new_p += str(tmpp.x) + "," + str(tmpp.y) + " "
-        else:
-            if pd[n][0] == 'h' or pd[n][0] == 'v':
-                new_p += "l "
-            else:
-                new_p += pd[n][0] + " "
-
-            for m in range(1, len(pd[n])):
-                if pd[n][0] == 'h':
-                    tmpp.assign(pd[n][m][0], 0)
-                elif pd[n][0] == 'v':
-                    tmpp.assign(0, pd[n][m][0])
-                else:
-                    tmpp.assign(pd[n][m][0], pd[n][m][1])
-
-                tmpp.rotate(rotate_angle, rotate_point)
-                tmpp.mult(scale)
-                new_p += str(tmpp.x) + "," + str(tmpp.y) + " "
+    width, height = svg_path.getWidth(), svg_path.getHeight()
+    new_p = svg_path.getParsed()
 
     return width, height, new_p
 
