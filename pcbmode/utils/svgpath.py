@@ -9,7 +9,7 @@ from . import messages as msg
 
 # import pcbmode modules
 from . import utils
-from pcbmode.utils.path_utils import boundary_box_check, calculate_points_of_quadratic_bezier, calculate_points_of_cubic_bezier, calculate_length_of_path_points
+from pcbmode.utils.path_utils import boundary_box_check, calculate_points_of_quadratic_bezier, calculate_points_of_cubic_bezier, calculate_length_of_path_points, cubic_bezier_bounds, quadratic_bezier_bounds
 from pcbmode.utils.svg_grammar import SvgGrammar
 from .point import Point
 
@@ -431,33 +431,17 @@ class SvgPath():
 
                 for n in range(0, len(bezier_curve_path), 4):
 
-                    # clear bezier point arrays
-                    bezier_points_x = []
-                    bezier_points_y = []
-
-                    # split points of bezier into 'x' and 'y' coordinate arrays
-                    # as this is what the point array function expects
-                    for m in range(0, 4):
-                        bezier_points_x.append(bezier_curve_path[n+m].x)
-                        bezier_points_y.append(bezier_curve_path[n+m].y)
-
-                    # calculate the individual points along the bezier curve for 'x'
-                    # and 'y'
-                    points_x = calculate_points_of_cubic_bezier(bezier_points_x, 100)
-                    points_y = calculate_points_of_cubic_bezier(bezier_points_y, 100)
-
-                    bezier_point_array = []
-
-                    # put those points back into a Point type array
-                    for n in range(0, len(points_x)):
-                        bezier_point_array.append(Point(points_x[n], points_y[n]))
-
-                    # check each point if it extends the boundary box
-                    for n in range(0, len(bezier_point_array)):
-                        bbox_top_left, bbox_bot_right = boundary_box_check(
-                            bbox_top_left,
-                            bbox_bot_right,
-                            bezier_point_array[n])
+                    bezier_points_x, bezier_points_y = zip(*[(p.x, p.y) for p in bezier_curve_path[n:n+4]])
+                    xmin, xmax = cubic_bezier_bounds(*bezier_points_x)
+                    ymin, ymax = cubic_bezier_bounds(*bezier_points_y)
+                    bbox_top_left, bbox_bot_right = boundary_box_check(
+                        bbox_top_left,
+                        bbox_bot_right,
+                        Point(xmin, ymin))
+                    bbox_top_left, bbox_bot_right = boundary_box_check(
+                        bbox_top_left,
+                        bbox_bot_right,
+                        Point(xmax, ymax))
 
 
             # quadratic Bezier curve command
@@ -480,21 +464,17 @@ class SvgPath():
 
                 for n in range(0, len(bezier_curve_path), 3):
 
-                    # split points of bezier into 'x' and 'y' coordinate arrays
-                    # as this is what the point array function expects
                     bezier_points_x, bezier_points_y = zip(*[(p.x, p.y) for p in bezier_curve_path[n:n+3]])
-
-                    # calculate the individual points along the bezier curve for 'x'
-                    # and 'y'
-                    points_x = calculate_points_of_quadratic_bezier(bezier_points_x, 100)
-                    points_y = calculate_points_of_quadratic_bezier(bezier_points_y, 100)
-
-                    # check each point if it extends the boundary box
-                    for point in (Point(points_x[n], points_y[n]) for n in range(len(points_x))):
-                        bbox_top_left, bbox_bot_right = boundary_box_check(
-                                bbox_top_left,
-                                bbox_bot_right,
-                                point)
+                    xmin, xmax = quadratic_bezier_bounds(*bezier_points_x)
+                    ymin, ymax = quadratic_bezier_bounds(*bezier_points_y)
+                    bbox_top_left, bbox_bot_right = boundary_box_check(
+                        bbox_top_left,
+                        bbox_bot_right,
+                        Point(xmin, ymin))
+                    bbox_top_left, bbox_bot_right = boundary_box_check(
+                        bbox_top_left,
+                        bbox_bot_right,
+                        Point(xmax, ymax))
 
 
             # simple quadratic Bezier curve command
@@ -520,33 +500,17 @@ class SvgPath():
 
                 for n in range(0, len(bezier_curve_path), 3):
 
-                    # clear bezier point arrays
-                    bezier_points_x = []
-                    bezier_points_y = []
-
-                    # split points of bezier into 'x' and 'y' coordinate arrays
-                    # as this is what the point array function expects
-                    for m in range(0, 3):
-                        bezier_points_x.append(bezier_curve_path[n+m].x)
-                        bezier_points_y.append(bezier_curve_path[n+m].y)
-
-                    # calculate the individual points along the bezier curve for 'x'
-                    # and 'y'
-                    points_x = calculate_points_of_quadratic_bezier(bezier_points_x, 100)
-                    points_y = calculate_points_of_quadratic_bezier(bezier_points_y, 100)
-
-                    bezier_point_array = []
-
-                    # put those points back into a Point type array
-                    for n in range(0, len(points_x)):
-                        bezier_point_array.append(Point(points_x[n], points_y[n]))
-
-                    # check each point if it extends the boundary box
-                    for m in range(0, len(bezier_point_array)):
-                        bbox_top_left, bbox_bot_right = boundary_box_check(
-                                bbox_top_left,
-                                bbox_bot_right,
-                                bezier_point_array[m])
+                    bezier_points_x, bezier_points_y = zip(*[(p.x, p.y) for p in bezier_curve_path[n:n+3]])
+                    xmin, xmax = quadratic_bezier_bounds(*bezier_points_x)
+                    ymin, ymax = quadratic_bezier_bounds(*bezier_points_y)
+                    bbox_top_left, bbox_bot_right = boundary_box_check(
+                        bbox_top_left,
+                        bbox_bot_right,
+                        Point(xmin, ymin))
+                    bbox_top_left, bbox_bot_right = boundary_box_check(
+                        bbox_top_left,
+                        bbox_bot_right,
+                        Point(xmax, ymax))
 
 
 
@@ -573,33 +537,17 @@ class SvgPath():
 
                 for n in range(0, len(bezier_curve_path), 4):
 
-                    # clear bezier point arrays
-                    bezier_points_x = []
-                    bezier_points_y = []
-
-                    # split points of bezier into 'x' and 'y' coordinate arrays
-                    # as this is what the point array function expects
-                    for m in range(0, 4):
-                        bezier_points_x.append(bezier_curve_path[n+m].x)
-                        bezier_points_y.append(bezier_curve_path[n+m].y)
-
-                    # calculate the individual points along the bezier curve for 'x'
-                    # and 'y'
-                    points_x = calculate_points_of_cubic_bezier(bezier_points_x, 100)
-                    points_y = calculate_points_of_cubic_bezier(bezier_points_y, 100)
-
-                    bezier_point_array = []
-
-                    # put those points back into a Point type array
-                    for n in range(0, len(points_x)):
-                        bezier_point_array.append(Point(points_x[n], points_y[n]))
-
-                    # check each point if it extends the boundary box
-                    for m in range(0, len(bezier_point_array)):
-                        bbox_top_left, bbox_bot_right = boundary_box_check(
-                                bbox_top_left,
-                                bbox_bot_right,
-                                bezier_point_array[m])
+                    bezier_points_x, bezier_points_y = zip(*[(p.x, p.y) for p in bezier_curve_path[n:n+3]])
+                    xmin, xmax = quadratic_bezier_bounds(*bezier_points_x)
+                    ymin, ymax = quadratic_bezier_bounds(*bezier_points_y)
+                    bbox_top_left, bbox_bot_right = boundary_box_check(
+                        bbox_top_left,
+                        bbox_bot_right,
+                        Point(xmin, ymin))
+                    bbox_top_left, bbox_bot_right = boundary_box_check(
+                        bbox_top_left,
+                        bbox_bot_right,
+                        Point(xmax, ymax))
 
 
             # 'line to'  command
@@ -737,19 +685,6 @@ class SvgPath():
 
 
 
-
-    def _quadratic_bezier_limit(self, start, control, end):
-        # check for nonzero denominator before beginning
-        denom = 2*control - start - end
-        if denom == 0:
-            raise Exception('zero denominator in bezier limit should not be reached')
-
-        # find t (0..1) at which limit occurs
-        t = (control - start) / denom
-        t2 = t*t
-
-        # find value for that limit
-        return start*(t2-2*t+1) + control*(-2*t2+2*t) + end*t2
 
     def getCoordList(self, steps, length):
         return self._makeCoordList(self._relative_parsed, steps, length)
