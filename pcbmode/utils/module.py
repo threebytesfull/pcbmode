@@ -270,7 +270,7 @@ class Module():
             refdef = component.getRefdef()
 
             if print_refdef:
-                print_refdef('{} '.format(refdef))
+                print_refdef(' {}'.format(refdef))
 
             # If the component is placed on the bottom layer we need
             # to invert the shapes AND their 'x' coordinate.  This is
