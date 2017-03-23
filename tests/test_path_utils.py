@@ -198,3 +198,78 @@ class TestPathUtils(unittest.TestCase):
                             calc_y = cubic_bezier_point(*(y_coords_in + (t,)))
                             self.assertAlmostEqual(x_coords_out[step], calc_x, delta=1e-12)
                             self.assertAlmostEqual(y_coords_out[step], calc_y, delta=1e-12)
+
+    # test quadratic_bezier_bounds
+
+    def test_quadratic_bezier_bounds(self):
+        """Check bounds calculation of quadratic bezier against brute-force coordinate search"""
+        test_curves = (
+            ( (0,0), (0,0), (0,0) ),
+            ( (0,0), (0,0), (10,0) ),
+            ( (0,0), (10,0), (10,0) ),
+            ( (0,0), (5,5), (10,0) ),
+            ( (50,0), (80,50), (100,0) ),
+            ( (-3,6), (7,9), (12,7) ),
+            ( (0,0), (0,5), (10,0) ),
+            ( (0,0), (1,9), (10,3) ),
+            ( (5,2), (1,6), (1,8) ),
+            ( (3,1), (1,6), (5,8) ),
+            ( (10,5), (5,0), (0,5) ),
+            ( (0,0), (20,10), (10,0) ),
+        )
+        # larger number of steps here to get finer resolution on large curves - needed for accuracy testing
+        num_steps = 10000
+        for curve in test_curves:
+            with self.subTest(curve=curve):
+                x_coords_in, y_coords_in = zip(*curve)
+                x_coords_out = calculate_points_of_quadratic_bezier(x_coords_in, num_steps)
+                y_coords_out = calculate_points_of_quadratic_bezier(y_coords_in, num_steps)
+                expected_xmin = min(x_coords_out)
+                expected_xmax = max(x_coords_out)
+                expected_ymin = min(y_coords_out)
+                expected_ymax = max(y_coords_out)
+                xmin, xmax = quadratic_bezier_bounds(*x_coords_in)
+                ymin, ymax = quadratic_bezier_bounds(*y_coords_in)
+                self.assertAlmostEqual(xmin, expected_xmin, delta=1e-6)
+                self.assertAlmostEqual(xmax, expected_xmax, delta=1e-6)
+                self.assertAlmostEqual(ymin, expected_ymin, delta=1e-6)
+                self.assertAlmostEqual(ymax, expected_ymax, delta=1e-6)
+
+    # test cubic_bezier_bounds
+
+    def test_cubic_bezier_bounds(self):
+        """Check bounds calculation of cubic bezier against brute-force coordinate search"""
+        test_curves = (
+            ( (0,0), (0,0), (0,0), (0,0) ),
+            ( (0,0), (0,0), (1,3), (0,0) ),
+            ( (0,0), (0,5), (10,5), (10,0) ),
+            ( (50,0), (80,50), (80,50), (100,0) ),
+            ( (-3,6), (7,9), (1.5,4), (12,7) ),
+            ( (0,0), (8,3), (3,7), (1,0) ),
+            ( (0,0), (0,8), (10,8), (10,0) ),
+            ( (4,5), (2,7), (3,0), (10,6) ),
+            ( (2,2), (4,6), (7,7), (9,8) ),
+            ( (4,5), (8,9), (1,0), (6,7) ),
+            ( (4,3), (5,5), (7,5), (9,3) ),
+            ( (9,3), (7,6), (5,4), (3,2) ),
+            ( (0,0), (-10,10), (20,10), (10,0) ),
+            ( (9.5,0), (9.6,10), (9.6,10), (9.6,0) ),
+            ( (-0.7441468,0), (-0.7511068,0), (-0.7580828,0), (-0.7650748,0) ),
+        )
+        # larger number of steps here to get finer resolution on large curves - needed for accuracy testing
+        num_steps = 10000
+        for curve in test_curves:
+            with self.subTest(curve=curve):
+                x_coords_in, y_coords_in = zip(*curve)
+                x_coords_out = calculate_points_of_cubic_bezier(x_coords_in, num_steps)
+                y_coords_out = calculate_points_of_cubic_bezier(y_coords_in, num_steps)
+                expected_xmin = min(x_coords_out)
+                expected_xmax = max(x_coords_out)
+                expected_ymin = min(y_coords_out)
+                expected_ymax = max(y_coords_out)
+                xmin, xmax = cubic_bezier_bounds(*x_coords_in)
+                ymin, ymax = cubic_bezier_bounds(*y_coords_in)
+                self.assertAlmostEqual(xmin, expected_xmin, delta=1e-6)
+                self.assertAlmostEqual(xmax, expected_xmax, delta=1e-6)
+                self.assertAlmostEqual(ymin, expected_ymin, delta=1e-6)
+                self.assertAlmostEqual(ymax, expected_ymax, delta=1e-6)

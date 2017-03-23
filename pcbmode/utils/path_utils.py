@@ -93,11 +93,11 @@ def quadratic_bezier_bounds(start, control, end):
     if control < min_end or control > max_end:
         denom = 2*control - start - end
         t = (control - start) / denom
-        if t >= 0 and t <= 1:
-            t2 = t*t
-            lim = start*(t2-2*t+1) + control*(-2*t2+2*t) + end*t2
-            min_end = min(min_end, lim)
-            max_end = max(max_end, lim)
+        assert t >= 0 and t <= 1
+        t2 = t*t
+        lim = start*(t2-2*t+1) + control*(-2*t2+2*t) + end*t2
+        min_end = min(min_end, lim)
+        max_end = max(max_end, lim)
 
     return min_end, max_end
 
@@ -129,7 +129,7 @@ def cubic_bezier_bounds(start, control1, control2, end):
         denom = first_b
         if denom != 0:
             t = num / denom
-            if t >= 0 and t <= 1:
+            if t >=0 and t <=1:
                 lim = __cubic_value_at(t)
                 min_end = min(min_end, lim)
                 max_end = max(max_end, lim)
@@ -140,11 +140,11 @@ def cubic_bezier_bounds(start, control1, control2, end):
             if discrim == 0:
                 # only one solution
                 t = -first_b/denom
-                if t >=0 and t <=1:
-                    # get lim at t
-                    lim = __cubic_value_at(t)
-                    min_end = min(min_end, lim)
-                    max_end = max(max_end, lim)
+                assert t >=0 and t <=1
+                # get lim at t
+                lim = __cubic_value_at(t)
+                min_end = min(min_end, lim)
+                max_end = max(max_end, lim)
             else:
                 # two solutions
                 root_discrim = sqrt(discrim)
@@ -152,17 +152,8 @@ def cubic_bezier_bounds(start, control1, control2, end):
                 t2 = (-first_b - root_discrim) / denom
                 for t in [t_ for t_ in (t1, t2) if t_>=0 and t_<=1]:
                     # calculate lim at this t
-                    second_a = -6*start + 18*control1 - 18*control2 + 6*end
-                    second_b = 6*start - 12*control1 + 6*control2
-
-                    second_derivative = t*second_a + second_b
                     lim = __cubic_value_at(t)
-
-                    if second_derivative > 0:
-                        # concave up, so this is a minimum
-                        min_end = min(min_end, lim)
-                    elif second_derivative < 0:
-                        # concave down, so this is a maximum
-                        max_end = max(max_end, lim)
+                    min_end = min(min_end, lim)
+                    max_end = max(max_end, lim)
 
     return min_end, max_end
