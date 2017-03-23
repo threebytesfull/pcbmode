@@ -67,7 +67,7 @@ class SvgPath():
 
     def _parseResultsToList(self, parsed):
         """
-        PyParsing returnd an object that looks like a list, but itsn't
+        PyParsing returns an object that looks like a list, but isn't
         quite. For that reason it cannot be serialised and stored in a
         JSON file. This function converts it to a Python list
         """
