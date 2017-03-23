@@ -463,3 +463,52 @@ class TestSvgPath(unittest.TestCase):
             with self.subTest(svg=test_input):
                 path = SvgPath(test_input)
                 self.assertEqual(path.getRelative(), expected_output)
+
+    def test_transform_with_defaults(self):
+        path = SvgPath('M1 2')
+        path.transform()
+        self.assertEqual(path.getFirstPoint(), ['1','2'], 'transform should make no changes by default')
+
+    def test_transform_uses_cache(self):
+        svg_string = 'M1 2 H 5'
+
+        path1 = SvgPath(svg_string)
+        path1.transform(scale=3)
+        t1 = path1.getTransformed()
+
+        path2 = SvgPath(svg_string)
+        path2.transform(scale=3)
+        t2 = path2.getTransformed()
+
+        self.assertIs(t1, t2, 'same transformation on same path should hit cache')
+
+    def test_transform_with_scale(self):
+        path = SvgPath('M1 2 3 4')
+        self.assertEqual(path.top_left, Point(1,4))
+        self.assertEqual(path.bottom_right, Point(3,2))
+        self.assertEqual(path.getWidth(), 2)
+        self.assertEqual(path.getHeight(), 2)
+
+        path.transform(scale=2)
+        self.assertEqual(path.getWidth(), 4)
+        self.assertEqual(path.getHeight(), 4)
+        self.assertEqual(path.bottom_right, Point(2,-2))
+        self.assertEqual(path.top_left, Point(-2,2))
+        # TODO: first point should get updated!
+        #self.assertEqual(path.getFirstPoint(), ['-2','-2'])
+
+    def test_transform_with_scale_uncentered(self):
+        path = SvgPath('M1 2 3 4')
+        self.assertEqual(path.top_left, Point(1,4))
+        self.assertEqual(path.bottom_right, Point(3,2))
+        self.assertEqual(path.getWidth(), 2)
+        self.assertEqual(path.getHeight(), 2)
+
+        path.transform(scale=2, center=False)
+        self.assertEqual(path.getWidth(), 4)
+        self.assertEqual(path.getHeight(), 4)
+        self.assertEqual(path.bottom_right, Point(6,4))
+        self.assertEqual(path.top_left, Point(2,8))
+        # TODO: first point should get updated!
+        #self.assertEqual(path.getFirstPoint(), ['2','4'])
+
