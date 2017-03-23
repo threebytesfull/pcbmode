@@ -12,6 +12,7 @@ import io
 import pyparsing as PP
 
 from pcbmode.config import Config
+from pcbmode.utils.point import Point
 from pcbmode.utils.svgpath import SvgPath
 from pcbmode.utils.svg_grammar import SvgGrammar
 
@@ -57,6 +58,10 @@ class TestSvgPath(unittest.TestCase):
             self.assertEqual(path.getHeight(), expected_results['height'], 'should calculate correct height')
         if 'num_segments' in expected_results:
             self.assertEqual(path.getNumberOfSegments(), expected_results['num_segments'], 'should get correct number of segments')
+        if 'top_left' in expected_results:
+            self.assertEqual(path.top_left, expected_results['top_left'], 'should get correct bounding box top left corner')
+        if 'bottom_right' in expected_results:
+            self.assertEqual(path.bottom_right, expected_results['bottom_right'], 'should get correct bounding box bottom right corner')
         return path
 
     def test_svg_paths_share_grammar_instance(self):
@@ -78,6 +83,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 0,
             'height': 0,
             'num_segments': 1,
+            'top_left': Point(1,2),
+            'bottom_right': Point(1,2),
             })
 
     def test_svg_path_from_move_single_relative(self):
@@ -86,6 +93,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 0,
             'height': 0,
             'num_segments': 1,
+            'top_left': Point(1,2),
+            'bottom_right': Point(1,2),
             })
 
     def test_svg_path_from_move_multi(self):
@@ -94,6 +103,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 2,
             'height': 2,
             'num_segments': 1,
+            'top_left': Point(1,4),
+            'bottom_right': Point(3,2),
             })
 
     def test_svg_path_from_move_multi_relative(self):
@@ -102,8 +113,9 @@ class TestSvgPath(unittest.TestCase):
             'width': 3,
             'height': 4,
             'num_segments': 1,
+            'top_left': Point(1,6),
+            'bottom_right': Point(4,2),
             })
-        svg_string = 'm 1 2 3 4'
 
     def test_svg_path_from_moves_single(self):
         self.assertPathParses('M 1 2 M 3 4', {
@@ -111,6 +123,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 2,
             'height': 2,
             'num_segments': 2,
+            'top_left': Point(1,4),
+            'bottom_right': Point(3,2),
             })
         # first move being relative should make no difference
         self.assertPathParses('m 1 2 M 3 4', {
@@ -118,6 +132,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 2,
             'height': 2,
             'num_segments': 2,
+            'top_left': Point(1,4),
+            'bottom_right': Point(3,2),
             })
 
     def test_svg_path_from_moves_single_relative(self):
@@ -126,6 +142,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 3,
             'height': 4,
             'num_segments': 2,
+            'top_left': Point(1,6),
+            'bottom_right': Point(4,2),
             })
 
     def test_svg_path_from_vertical_line_single(self):
@@ -134,6 +152,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 0,
             'height': 7,
             'num_segments': 1,
+            'top_left': Point(3,5),
+            'bottom_right': Point(3,-2),
             })
 
     def test_svg_path_from_vertical_line_multi(self):
@@ -142,6 +162,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 0,
             'height': 8,
             'num_segments': 1,
+            'top_left': Point(3,6),
+            'bottom_right': Point(3,-2),
             })
 
     def test_svg_path_from_vertical_line_single_relative(self):
@@ -150,6 +172,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 0,
             'height': 5,
             'num_segments': 1,
+            'top_left': Point(3,3),
+            'bottom_right': Point(3,-2),
             })
 
     def test_svg_path_from_vertical_line_multi_relative(self):
@@ -158,6 +182,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 0,
             'height': 11,
             'num_segments': 1,
+            'top_left': Point(3,9),
+            'bottom_right': Point(3,-2),
             })
 
     def test_svg_path_from_horizontal_line_single(self):
@@ -166,6 +192,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 2,
             'height': 0,
             'num_segments': 1,
+            'top_left': Point(3,-2),
+            'bottom_right': Point(5,-2),
             })
 
     def test_svg_path_from_horizontal_line_multi(self):
@@ -174,6 +202,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 3,
             'height': 0,
             'num_segments': 1,
+            'top_left': Point(3,-2),
+            'bottom_right': Point(6,-2),
             })
 
     def test_svg_path_from_horizontal_line_single_relative(self):
@@ -182,6 +212,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 5,
             'height': 0,
             'num_segments': 1,
+            'top_left': Point(3,-2),
+            'bottom_right': Point(8,-2),
             })
 
     def test_svg_path_from_horizontal_line_multi_relative(self):
@@ -190,6 +222,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 11,
             'height': 0,
             'num_segments': 1,
+            'top_left': Point(3,-2),
+            'bottom_right': Point(14,-2),
             })
 
     def test_svg_path_from_line_single(self):
@@ -198,6 +232,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 4,
             'height': 3,
             'num_segments': 1,
+            'top_left': Point(3,1),
+            'bottom_right': Point(7,-2),
             })
 
     def test_svg_path_from_line_multi(self):
@@ -206,6 +242,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 4,
             'height': 3,
             'num_segments': 1,
+            'top_left': Point(3,1),
+            'bottom_right': Point(7,-2),
             })
 
     def test_svg_path_from_line_single_relative(self):
@@ -214,6 +252,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 4,
             'height': 3,
             'num_segments': 1,
+            'top_left': Point(3,1),
+            'bottom_right': Point(7,-2),
             })
 
     def test_svg_path_from_line_multi_relative(self):
@@ -222,6 +262,8 @@ class TestSvgPath(unittest.TestCase):
             'width': 4,
             'height': 3,
             'num_segments': 1,
+            'top_left': Point(3,1),
+            'bottom_right': Point(7,-2),
             })
 
     @unittest.skip('arcs not implemented yet')
@@ -257,6 +299,8 @@ class TestSvgPath(unittest.TestCase):
             'first_point': ['5', '0'],
             'num_segments': 1,
             'width': 10,
+            'top_left': Point(5,2.5),
+            'bottom_right': Point(15,0),
             })
 
     def test_svg_path_from_quadratic_bezier_multi(self):
@@ -264,6 +308,8 @@ class TestSvgPath(unittest.TestCase):
             'first_point': ['5', '0'],
             'num_segments': 1,
             'width': 20,
+            'top_left': Point(5,2.5),
+            'bottom_right': Point(25,-2.5),
             })
 
     def test_svg_path_from_quadratic_bezier_single_relative(self):
@@ -271,6 +317,8 @@ class TestSvgPath(unittest.TestCase):
             'first_point': ['5', '0'],
             'num_segments': 1,
             'width': 10,
+            'top_left': Point(5,2.5),
+            'bottom_right': Point(15,0),
             })
 
     def test_svg_path_from_quadratic_bezier_multi_relative(self):
@@ -278,6 +326,8 @@ class TestSvgPath(unittest.TestCase):
             'first_point': ['5', '0'],
             'num_segments': 1,
             'width': 20,
+            'top_left': Point(5,2.5),
+            'bottom_right': Point(25,-2.5),
             })
 
     @unittest.skip('smooth quadratic bezier dimensions calculation not implemented yet')
