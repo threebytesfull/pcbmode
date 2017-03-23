@@ -420,6 +420,7 @@ def main():
         if cmdline_args.make is True:
             msg.info("Creating board")
             board = Board()
+            board.generate()
 
         # Create production files (Gerbers, Excellon, etc.)
         if cmdline_args.fab is not False:

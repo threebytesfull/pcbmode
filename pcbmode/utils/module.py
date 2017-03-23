@@ -64,6 +64,7 @@ class Module():
         self._transform = 'translate(%s %s)' % (round(self._width/2, sig_dig),
                                                 round(self._height/2, sig_dig))
 
+    def generate(self):
         # Create the Inkscape SVG document
         self._module = self._getModuleElement()
         svg_doc = et.ElementTree(self._module)
