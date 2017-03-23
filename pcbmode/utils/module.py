@@ -92,21 +92,19 @@ class Module():
         msg.subInfo('Placing components:', newline=False)
         self._placeComponents(components=self._components,
                               component_type='component',
-                              print_refdef=True)
-        sys.stdout.write("\n")
+                              print_refdef=msg.progressiveInfo)
+        msg.progressiveInfo('\n')
 
         msg.subInfo('Placing routes')
         self._placeRouting()
 
         msg.subInfo('Placing vias')
         self._placeComponents(components=self._vias,
-                              component_type='via',
-                              print_refdef=False)
+                              component_type='via')
 
         msg.subInfo('Placing shapes')
         self._placeComponents(components=self._shapes,
-                              component_type='shape',
-                              print_refdef=False)
+                              component_type='shape')
 
         if config.tmp['no-docs'] == False:
             msg.subInfo('Placing documentation')
@@ -253,7 +251,7 @@ class Module():
 
 
 
-    def _placeComponents(self, components, component_type, print_refdef=False):
+    def _placeComponents(self, components, component_type, print_refdef=None):
         """
         Places the component on the board.
 
@@ -270,8 +268,8 @@ class Module():
             rotation = component.getRotation()
             refdef = component.getRefdef()
 
-            if print_refdef == True:
-                sys.stdout.write("%s " % refdef)
+            if print_refdef:
+                print_refdef('{} '.format(refdef))
 
             # If the component is placed on the bottom layer we need
             # to invert the shapes AND their 'x' coordinate.  This is

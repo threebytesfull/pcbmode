@@ -33,6 +33,14 @@ def subInfo(info, newline=True):
 
 
 
+def progressiveInfo(info):
+    """
+    """
+    sys.stdout.write(info)
+    sys.stdout.flush()
+
+
+
 def error(info, error_type=None):
     """
     """

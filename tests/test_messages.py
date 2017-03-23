@@ -63,6 +63,14 @@ class TestMessages(unittest.TestCase):
             msg.subInfo('some sub-information', newline=False)
             self.assertEqual(fake_out.getvalue(), ' * some sub-information')
 
+    # progressiveInfo tests
+    def test_progressive_info(self):
+        with patch('sys.stdout', new=io.StringIO()) as fake_out:
+            msg.progressiveInfo('progress...')
+            self.assertEqual(fake_out.getvalue(), 'progress...')
+            msg.progressiveInfo('.')
+            self.assertEqual(fake_out.getvalue(), 'progress....')
+
     def test_error_without_type(self):
         with patch('sys.stdout', new=io.StringIO()) as fake_out:
             with self.assertRaises(Exception, msg='error should raise Exception'):
