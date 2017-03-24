@@ -489,26 +489,73 @@ class TestSvgPath(unittest.TestCase):
         self.assertEqual(path.getWidth(), 2)
         self.assertEqual(path.getHeight(), 2)
 
+        # path should be centred and then scaled around origin
         path.transform(scale=2)
         self.assertEqual(path.getWidth(), 4)
         self.assertEqual(path.getHeight(), 4)
-        self.assertEqual(path.bottom_right, Point(2,-2))
         self.assertEqual(path.top_left, Point(-2,2))
+        self.assertEqual(path.bottom_right, Point(2,-2))
+        # TODO: sort out rounding issue with transformed path?
+        #self.assertEqual(path.getTransformed(), 'm -2.0,-2.0 4.0,4.0 ')
+        #self.assertEqual(path.getTransformedMirrored(), 'm 2.0,-2.0 -4.0,4.0 ')
         # TODO: first point should get updated!
         #self.assertEqual(path.getFirstPoint(), ['-2','-2'])
 
-    def test_transform_with_scale_uncentered(self):
+    def test_transform_with_scale_uncentred(self):
         path = SvgPath('M1 2 3 4')
         self.assertEqual(path.top_left, Point(1,4))
         self.assertEqual(path.bottom_right, Point(3,2))
         self.assertEqual(path.getWidth(), 2)
         self.assertEqual(path.getHeight(), 2)
 
+        # path should be scaled around its own centre
         path.transform(scale=2, center=False)
+        self.assertEqual(path.top_left, Point(2,8))
+        self.assertEqual(path.bottom_right, Point(6,4))
         self.assertEqual(path.getWidth(), 4)
         self.assertEqual(path.getHeight(), 4)
-        self.assertEqual(path.bottom_right, Point(6,4))
-        self.assertEqual(path.top_left, Point(2,8))
+        # TODO: sort out rounding issue with transformed path?
+        #self.assertEqual(path.getTransformed(), 'm 2.0,4.0 4.0,4.0 ')
+        #self.assertEqual(path.getTransformedMirrored(), 'm 4.0,4.0 -4.0,4.0 ')
         # TODO: first point should get updated!
         #self.assertEqual(path.getFirstPoint(), ['2','4'])
 
+    def test_transform_with_mirror(self):
+        path = SvgPath('M1 2 3 4')
+        self.assertEqual(path.top_left, Point(1,4))
+        self.assertEqual(path.bottom_right, Point(3,2))
+        self.assertEqual(path.getWidth(), 2)
+        self.assertEqual(path.getHeight(), 2)
+        self.assertEqual(path.getRelative(), 'm 1.0,2.0 2.0,2.0 ')
+
+        # path should be centred and then mirrored around origin
+        path.transform(mirror=True)
+        self.assertEqual(path.top_left, Point(-1,1))
+        self.assertEqual(path.bottom_right, Point(1,-1))
+        self.assertEqual(path.getWidth(), 2)
+        self.assertEqual(path.getHeight(), 2)
+        self.assertEqual(path.getRelative(), 'm 1.0,2.0 2.0,2.0 ')
+        # TODO: sort out rounding issue with transformed path?
+        #self.assertEqual(path.getTransformed(), 'm 1.0,-1.0 -2.0,2.0 ')
+        # TODO: first point should get updated!
+        #self.assertEqual(path.getFirstPoint(), ['-2','-2'])
+
+    def test_transform_with_mirror_uncentred(self):
+        path = SvgPath('M1 2 3 4')
+        self.assertEqual(path.top_left, Point(1,4))
+        self.assertEqual(path.bottom_right, Point(3,2))
+        self.assertEqual(path.getWidth(), 2)
+        self.assertEqual(path.getHeight(), 2)
+        self.assertEqual(path.getRelative(), 'm 1.0,2.0 2.0,2.0 ')
+
+        # path should be mirrored around its own centre
+        path.transform(mirror=True, center=False)
+        self.assertEqual(path.top_left, Point(1,4))
+        self.assertEqual(path.bottom_right, Point(3,2))
+        self.assertEqual(path.getWidth(), 2)
+        self.assertEqual(path.getHeight(), 2)
+        self.assertEqual(path.getRelative(), 'm 1.0,2.0 2.0,2.0 ')
+        # TODO: sort out rounding issue with transformed path?
+        #self.assertEqual(path.getTransformed(), 'm 1.0,-1.0 -2.0,2.0 ')
+        # TODO: first point should get updated!
+        #self.assertEqual(path.getFirstPoint(), ['-2','-2'])
