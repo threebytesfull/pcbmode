@@ -18,6 +18,7 @@ except:
 from pkg_resources import get_distribution
 
 import pcbmode.config as config
+from pcbmode.config import Config
 
 # pcbmode modules
 from .point import Point
@@ -48,9 +49,9 @@ def openBoardSVG():
     Returns an ElementTree object
     """
 
-    filename = os.path.join(config.cfg['base-dir'],
-                            config.cfg['locations']['build'],
-                            config.cfg['name'] + '.svg')
+    c = Config()
+    filename = c.path_in_location('build', c.get('cfg', 'name') + '.svg')
+
     try:
         data = et.ElementTree(file=filename)
     except IOError as e:
@@ -118,10 +119,10 @@ def makePngs():
     Creates a PNG of the board using Inkscape
     """
 
+    c = Config()
+
     # Directory for storing the Gerbers within the build path
-    images_path = os.path.join(config.cfg['base-dir'],
-                               config.cfg['locations']['build'],
-                               'images')
+    images_path = c.path_in_location('build', 'images')
     # Create it if it doesn't exist
     create_dir(images_path)
 
@@ -129,14 +130,12 @@ def makePngs():
     png_dpi = 600
     msg.subInfo("Generating PNGs for each layer of the board")
 
+    file_path = c.path_in_location('build', c.get('cfg', 'name') + '.svg')
+
     command = ['inkscape',
                '--without-gui',
-               '--file=%s' % os.path.abspath(os.path.join(config.cfg['base-dir'],
-                                                          config.cfg['locations']['build'],
-                                                          config.cfg['name'] + '.svg')),
-               '--export-png=%s' % os.path.abspath(os.path.join(images_path, config.cfg['name'] + '_rev_' +
-                                                                config.brd['config']['rev'] +
-                                                                '.png')),
+               '--file=%s' % c.path_in_location('build', c.get('cfg', 'name') + '.svg', absolute=True),
+               '--export-png=%s' % c.path_in_location('build', 'images', c.get('cfg', 'name') + '_rev_' + c.get('brd', 'config', 'rev') + '.png', absolute=True),
                '--export-dpi=%s' % str(png_dpi),
                '--export-area-drawing',
                '--export-background=#FFFFFF']
@@ -152,54 +151,10 @@ def makePngs():
 
 
 
-# get_json_data_from_file
-def dictFromJsonFile(filename, error=True):
-    """
-    Open a json file and returns its content as a dict
-    """
-
-    def checking_for_unique_keys(pairs):
-        """
-        Check if there are duplicate keys defined; this is useful
-        for any hand-edited file
-
-        This SO answer was useful here:
-          http://stackoverflow.com/questions/16172011/json-in-python-receive-check-duplicate-key-error
-        """
-        result = dict()
-        for key,value in pairs:
-            if key in result:
-                msg.error("duplicate key ('%s') specified in %s" % (key, filename), KeyError)
-            result[key] = value
-        return result
-
-    try:
-        with open(filename, 'r') as f:
-            json_data = json.load(f, object_pairs_hook=checking_for_unique_keys)
-    except (IOError, OSError):
-        if error == True:
-            msg.error("Couldn't open JSON file: %s" % filename, IOError)
-        else:
-            msg.info("Couldn't open JSON file: %s" % filename, IOError)
-
-    return json_data
-
-
-
-
 def getLayerList():
     """
     """
-    layer_list = []
-    for record in config.stk['stackup']:
-        if record['type'] == 'signal-layer-surface' or record['type'] == 'signal-layer-internal':
-            layer_list.append(record)
-
-    layer_names = []
-    for record in layer_list:
-        layer_names.append(record['name'])
-
-    return layer_list, layer_names
+    return Config().getLayerList()
 
 
 
@@ -360,42 +315,6 @@ def checkForPoursInLayer(layer):
 
 
 
-def interpret_svg_matrix(matrix_data):
-    """
-    Takes an array for six SVG parameters and returns angle, scale
-    and placement coordinate
-
-    This SO answer was helpful here:
-      http://stackoverflow.com/questions/15546273/svg-matrix-to-rotation-degrees
-    """
-
-    # apply float() to all elements, just in case
-    matrix_data = [ float(x) for x in matrix_data ]
-
-    coord = Point(matrix_data[4], -matrix_data[5])
-    if matrix_data[0] == 0:
-        angle = math.degrees(0)
-    else:
-        angle = math.atan(matrix_data[2] / matrix_data[0])
-
-    scale = Point(math.fabs(matrix_data[0] / math.cos(angle)),
-                  math.fabs(matrix_data[3] / math.cos(angle)))
-
-    # convert angle to degrees
-    angle = math.degrees(angle)
-
-    # Inkscape rotates anti-clockwise, PCBmodE "thinks" clockwise. The following
-    # adjusts these two views, although at some point we'd
-    # need to have the same view, or make it configurable
-    angle = -angle
-
-    return coord, angle, scale
-
-
-
-
-
-
 def parse_refdef(refdef):
     """
     Parses a reference designator and returns the refdef categoty,
@@ -477,9 +396,7 @@ def renumberRefdefs(order):
 
     # Save board config to file (everything is saved, not only the
     # component data)
-    filename = os.path.join(config.cfg['locations']['boards'],
-                            config.cfg['name'],
-                            config.cfg['name'] + '.json')
+    filename = c.path_in_location('boards', c.get('name'), c.get('name') + '.json')
     try:
         with open(filename, 'wb') as f:
             f.write(json.dumps(config.brd, sort_keys=True, indent=2))
@@ -643,7 +560,6 @@ def parseTransform(transform):
         data['location'] = Point()
     elif 'translate' in transform.lower():
         regex = r".*?translate\s?\(\s?(?P<x>[+-]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\s?[\s,]\s?(?P<y>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\s?\).*"
-#       regex = r".*?translate\s?\(\s?(?P<x>-?[0-9]*\.?[0-9]+)\s?[\s,]\s?(?P<y>-?[0-9]*\.?[0-9]+\s?)\s?\).*"
         coord = re.match(regex, transform)
         data['type'] = 'translate'
         x = coord.group('x')
@@ -679,16 +595,14 @@ def parseSvgMatrix(matrix):
 
     coord = Point(matrix[4], matrix[5])
     if matrix[0] == 0:
-        angle = math.degrees(0)
+        angle = 0
     else:
         angle = math.atan(matrix[2] / matrix[0])
 
-    #scale = Point(math.fabs(matrix[0] / math.cos(angle)),
-    #              math.fabs(matrix[3] / math.cos(angle)))
-    scale_x = math.sqrt(matrix[0]*matrix[0] + matrix[1]*matrix[1]),
-    scale_y = math.sqrt(matrix[2]*matrix[2] + matrix[3]*matrix[3]),
+    scale_x = math.hypot(matrix[0], matrix[1])
+    scale_y = math.hypot(matrix[2], matrix[3])
 
-    scale = max(scale_x, scale_y)[0]
+    scale = max(scale_x, scale_y)
 
     # convert angle to degrees
     angle = math.degrees(angle)

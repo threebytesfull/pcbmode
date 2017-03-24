@@ -1,12 +1,13 @@
 #!/usr/bin/python
 
-#import json
 import os
 import re
 import pcbmode.config as config
 
 from . import utils
 from . import messages as msg
+
+from pcbmode.utils.json import dictFromJsonFile
 
 
 

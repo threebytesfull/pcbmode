@@ -1,12 +1,9 @@
 #!/usr/bin/python
 
-from math import pi, sin, cos
+from math import pi, sin, cos, radians
 import decimal
 
 import pcbmode.config as config
-
-DEG2RAD = 2 * pi / 360
-
 
 class Point:
 
@@ -47,12 +44,14 @@ class Point:
         return
 
     def rotate(self, deg, p):
-        """ rotate the point in degrees around another point """
-        rad = deg * DEG2RAD
-        x = self.x
-        y = self.y
-        self.x = (x * cos(rad) + y * sin(rad))
-        self.y = (x * -sin(rad) + y * cos(rad))
+        """ rotate the point in degrees clockwise around another point """
+        rad = radians(-deg)
+        cos_angle = cos(rad)
+        sin_angle = sin(rad)
+        x = self.x - p.x
+        y = self.y - p.y
+        self.x = x*cos_angle - y*sin_angle + p.x
+        self.y = x*sin_angle + y*cos_angle + p.y
         return
 
     def round(self, d):

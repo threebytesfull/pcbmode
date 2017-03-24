@@ -13,6 +13,7 @@ from pkg_resources import resource_filename, resource_exists
 
 # PCBmodE modules
 from . import config
+from pcbmode.config import Config
 from .utils import utils
 from .utils import gerber
 from .utils import extract
@@ -21,6 +22,7 @@ from .utils import messages as msg
 from .utils import bom
 from .utils import coord_file
 from .utils.board import Board
+from .utils.json import dictFromJsonFile
 
 
 def cmdArgSetup(pcbmode_version):
@@ -121,22 +123,8 @@ def makeConfig(name, version, cmdline_args):
     # calling directory, and then where the script is
     msg.info("Processing PCBmodE's configuration file")
 
-    paths = [os.path.join(os.getcwd(), cmdline_args.config_file)]
-
-    config_resource = (__name__, 'pcbmode_config.json')
-    if resource_exists(*config_resource):
-        paths.append(resource_filename(*config_resource))
-
-    filenames = ''
-    for path in paths:
-        filename = path
-        filenames += "  %s \n" % filename
-        if os.path.isfile(filename):
-            config.cfg = utils.dictFromJsonFile(filename)
-            break
-
-    if config.cfg == {}:
-        msg.error("Couldn't open PCBmodE's configuration file %s. Looked for it here:\n%s" % (cmdline_args.config_file, filenames))
+    c = Config(clean=True)
+    c.load_defaults(filename=cmdline_args.config_file)
 
     # add stuff
     config.cfg['name'] = name
@@ -150,7 +138,7 @@ def makeConfig(name, version, cmdline_args):
     filename = os.path.join(config.cfg['locations']['boards'],
                             config.cfg['name'],
                             config.cfg['name'] + '.json')
-    config.brd = utils.dictFromJsonFile(filename)
+    config.brd = dictFromJsonFile(filename)
 
     tmp_dict = config.brd.get('config')
     if tmp_dict != None:
@@ -183,7 +171,7 @@ def makeConfig(name, version, cmdline_args):
         filename = path
         filenames += "  %s \n" % filename
         if os.path.isfile(filename):
-            config.stl['layout'] = utils.dictFromJsonFile(filename)
+            config.stl['layout'] = dictFromJsonFile(filename)
             break
 
     if not 'layout' in config.stl or config.stl['layout'] == {}:
@@ -208,7 +196,7 @@ def makeConfig(name, version, cmdline_args):
         filename = path
         filenames += "  %s \n" % filename
         if os.path.isfile(filename):
-            config.stk = utils.dictFromJsonFile(filename)
+            config.stk = dictFromJsonFile(filename)
             break
 
     if config.stk == {}:
@@ -231,7 +219,7 @@ def makeConfig(name, version, cmdline_args):
     # Open database file. If it doesn't exist, leave the database in
     # ots initial state of {}
     if os.path.isfile(filename):
-        config.pth = utils.dictFromJsonFile(filename)
+        config.pth = dictFromJsonFile(filename)
 
 
     #----------------------------------------------------------------
@@ -243,7 +231,7 @@ def makeConfig(name, version, cmdline_args):
     # Open database file. If it doesn't exist, leave the database in
     # ots initial state of {}
     if os.path.isfile(filename):
-        config.rte = utils.dictFromJsonFile(filename)
+        config.rte = dictFromJsonFile(filename)
     else:
         config.rte = {}
 
@@ -375,8 +363,8 @@ def makeConfig(name, version, cmdline_args):
     # Get overrides
     layer_control_config = config.brd.get('layer-control')
     if layer_control_config != None:
-        config.brd['layer-control'] = dict(layer_control_default.items() +
-                                           layer_control_config.items())
+        config.brd['layer-control'] = dict(layer_control_default.items())
+        config.brd['layer-control'].update(dict(layer_control_config.items()))
     else:
         config.brd['layer-control'] = layer_control_default
 
@@ -432,6 +420,7 @@ def main():
         if cmdline_args.make is True:
             msg.info("Creating board")
             board = Board()
+            board.generate()
 
         # Create production files (Gerbers, Excellon, etc.)
         if cmdline_args.fab is not False:

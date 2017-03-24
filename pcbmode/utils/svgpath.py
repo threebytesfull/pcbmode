@@ -9,9 +9,9 @@ from . import messages as msg
 
 # import pcbmode modules
 from . import utils
-from . import svg
+from pcbmode.utils.path_utils import boundary_box_check, calculate_points_of_quadratic_bezier, calculate_points_of_cubic_bezier, calculate_length_of_path_points, cubic_bezier_bounds, quadratic_bezier_bounds
+from pcbmode.utils.svg_grammar import SvgGrammar
 from .point import Point
-
 
 
 class SvgPath():
@@ -25,15 +25,15 @@ class SvgPath():
         digest = utils.digest(path)
         self._record = config.pth.get(digest)
 
-        self._svgGrammar = self._makeSVGGrammar()
+        self._svg_grammar = SvgGrammar().grammar
 
         if self._record == None:
-            self._original_parsed = self._svgGrammar.parseString(self._original)
+            self._original_parsed = self.grammar.parseString(self._original)
             self._original_parsed = self._parseResultsToList(self._original_parsed)
             self._first_point = ([self._original_parsed[0][1][0],
                                   self._original_parsed[0][1][1]])
             self._relative = self._makeRelative(self._original_parsed)
-            self._relative_parsed = self._svgGrammar.parseString(self._relative)
+            self._relative_parsed = self.grammar.parseString(self._relative)
             self._relative_parsed = self._parseResultsToList(self._relative_parsed)
             self._width, self._height = self._getDimensions(self._relative_parsed)
             config.pth[digest] = {}
@@ -50,13 +50,24 @@ class SvgPath():
             self._width = self._record['width']
             self._height = self._record['height']
 
+    @property
+    def grammar(self):
+        return self._svg_grammar
+
+    @property
+    def top_left(self):
+        return self._bbox_top_left
+
+    @property
+    def bottom_right(self):
+        return self._bbox_bot_right
 
 
 
 
     def _parseResultsToList(self, parsed):
         """
-        PyParsing returnd an object that looks like a list, but itsn't
+        PyParsing returns an object that looks like a list, but isn't
         quite. For that reason it cannot be serialised and stored in a
         JSON file. This function converts it to a Python list
         """
@@ -110,54 +121,6 @@ class SvgPath():
 
 
 
-    def _makeSVGGrammar(self):
-        """
-        Creates an SVG path parsing grammar
-        """
-
-        # pyparsing grammar
-        comma = PYP.Literal(",").suppress() # supress removes the ',' when captured
-        dot = PYP.Literal(".")
-        coord = PYP.Regex(r"-?\d+(\.\d*)?([Ee][+-]?\d+)?")
-        one_coord = PYP.Group(coord)
-        xycoords = PYP.Group(coord + PYP.Optional(comma) + coord)
-        two_xycoords = xycoords + PYP.Optional(comma) + xycoords
-        three_xycoords = xycoords + PYP.Optional(comma) + xycoords + PYP.Optional(comma)+xycoords
-
-        # TODO optimise this; there has to be a more efficient way to describe this
-        c_M = PYP.Literal('M') + PYP.OneOrMore(xycoords)
-        c_m = PYP.Literal('m') + PYP.OneOrMore(xycoords)
-
-        c_C = PYP.Literal('C') + PYP.OneOrMore(three_xycoords)
-        c_c = PYP.Literal('c') + PYP.OneOrMore(three_xycoords)
-
-        c_Q = PYP.Literal('Q') + PYP.OneOrMore(two_xycoords)
-        c_q = PYP.Literal('q') + PYP.OneOrMore(two_xycoords)
-
-        c_T = PYP.Literal('T') + PYP.OneOrMore(xycoords)
-        c_t = PYP.Literal('t') + PYP.OneOrMore(xycoords)
-
-        c_L = PYP.Literal('L') + PYP.OneOrMore(xycoords)
-        c_l = PYP.Literal('l') + PYP.OneOrMore(xycoords)
-
-        c_V = PYP.Literal('V') + PYP.OneOrMore(one_coord)
-        c_v = PYP.Literal('v') + PYP.OneOrMore(one_coord)
-
-        c_H = PYP.Literal('H') + PYP.OneOrMore(one_coord)
-        c_h = PYP.Literal('h') + PYP.OneOrMore(one_coord)
-
-        c_S = PYP.Literal('S') + PYP.OneOrMore(two_xycoords)
-        c_s = PYP.Literal('s') + PYP.OneOrMore(two_xycoords)
-
-        c_z = PYP.Literal('z')
-        c_Z = PYP.Literal('Z')
-
-        path_cmd = c_M | c_m | c_C | c_c | c_Q | c_q | c_T | c_t | c_L | c_l | c_V | c_v | c_H | c_h | c_S | c_s | c_Z | c_z
-
-        return PYP.OneOrMore(PYP.Group(path_cmd))
-
-
-
     def _makeRelative(self, path):
         """
         """
@@ -171,8 +134,12 @@ class SvgPath():
 
         for i in range(0, len(path)):
 
+            command = path[i][0]
+            command_lower = command.lower()
+
             # 'move to' command
-            if re.match('M', path[i][0], re.I):
+            # M (x y)+
+            if command_lower == 'm':
 
                 # TODO: write this code more concisely
 
@@ -208,10 +175,12 @@ class SvgPath():
 
 
             # cubic Bezier (PCCP) curve command
-            elif re.match('C', path[i][0], re.I):
-                p += path[i][0].lower()+' '
+            #    C (x1 y1 x2 y2 x y)+
+            # -> C (control1 control2 dest)+
+            elif command_lower == 'c':
+                p += 'c '
 
-                if path[i][0] == 'c':
+                if command == 'c':
                     for coord_tmp in path[i][1:]:
                         coord.assign(coord_tmp[0], coord_tmp[1])
                         p += str(coord.x) + ',' + str(coord.y) +' '
@@ -221,7 +190,7 @@ class SvgPath():
                         coord.assign(coord_tmp[0], coord_tmp[1])
                         abspos += coord
 
-                if path[i][0] == 'C':
+                if command == 'C':
                     for n in range(1, len(path[i])-1, 3):
                         for m in range(0, 3):
                             coord.assign(path[i][n+m][0], path[i][n+m][1])
@@ -230,10 +199,12 @@ class SvgPath():
 
 
             # quadratic Bezier (PCP) curve command
-            elif re.match('Q', path[i][0], re.I):
-                p += path[i][0].lower() + ' '
+            #    Q (x1 y1 x y)+
+            # -> Q (control1 dest)+
+            elif command_lower == 'q':
+                p += 'q '
 
-                if path[i][0] == 'q':
+                if command == 'q':
                     for coord_tmp in path[i][1:]:
                         coord.assign(coord_tmp[0], coord_tmp[1])
                         p += str(coord.x) + ',' + str(coord.y) +' '
@@ -243,7 +214,7 @@ class SvgPath():
                         coord.assign(coord_tmp[0], coord_tmp[1])
                         abspos += coord
 
-                if path[i][0] == 'Q':
+                if command == 'Q':
                     for j in range(1,len(path[i])+1, 2):
                         for coord_tmp in path[i][j:j+2]:
                             coord.assign(coord_tmp[0], coord_tmp[1])
@@ -251,52 +222,59 @@ class SvgPath():
                         abspos.assign(coord.x, coord.y)
 
 
-            # simple cubic Bezier curve command
-            elif re.match('T', path[i][0], re.I):
-                p += path[i][0].lower()+' '
+            # simple quadratic Bezier curve command
+            #    T (x y)+
+            # -> T (dest)+
+            elif command_lower == 't':
+                p += 't '
 
-                if path[i][0] == 't':
+                if command == 't':
                     for coord_tmp in path[i][1:]:
                         coord.assign(coord_tmp[0], coord_tmp[1])
                         p += str(coord.x) + ',' + str(coord.y) + ' '
-                    # for keeping track of the absolute position, we need to add up every
-                    # *third* coordinate of the cubic Bezier curve
-                    #for coord in path[i][2::2]:
+                        # for keeping track of the absolute position, we need to add up every
+                        # coordinate of the simple quadratic Bezier curve
                         abspos += coord
 
-                if path[i][0] == 'T':
+                if command == 'T':
                     for coord_tmp in path[i][1:]:
                         coord.assign(coord_tmp[0], coord_tmp[1])
-                        p += str(float(coord[0]) - abspos['x']) + ',' + str(float(coord[1]) - abspos['y']) + ' '
-                    abspos.assign(coord.x, coord.y)
+                        p += str(coord.x - abspos.x) + ',' + str(coord.y - abspos.y) + ' '
+                        abspos.assign(coord.x, coord.y)
 
-            elif re.match('S', path[i][0], re.I):
-                p += path[i][0].lower()+' '
+            # simple cubic Bezier curve command
+            #    S (x2 y2 x y)+
+            # -> S (control2 dest)+
+            elif command_lower == 's':
+                p += 's '
 
-                if path[i][0] == 's':
+                if command == 's':
                     for coord_tmp in path[i][1:]:
                         coord.assign(coord_tmp[0], coord_tmp[1])
                         p += str(coord.x)+','+str(coord.y)+' '
                         abspos += coord
 
-                if path[i][0] == 'S':
-                    for coord_tmp in path[i][1:]:
-                        coord.assign(coord_tmp[0], coord_tmp[1])
-                        p += str(coord.x - abspos.x) + ',' + str(coord.y - abspos.y) + ' '
-                    abspos.assign(coord.x, coord.y)
+                if command == 'S':
+                    for j in range(1,len(path[i])+1, 2):
+                        for coord_tmp in path[i][j:j+2]:
+                            coord.assign(coord_tmp[0], coord_tmp[1])
+                            p += str(coord.x - abspos.x) + ',' + str(coord.y - abspos.y) + ' '
+                        abspos.assign(coord.x, coord.y)
 
 
             # 'line to'  command
-            elif re.match('L', path[i][0], re.I):
-                p += path[i][0].lower()+' '
+            #    L (x y)+
+            # -> L (dest)+
+            elif command_lower == 'l':
+                p += 'l '
 
-                if path[i][0] == 'l':
+                if command == 'l':
                     for coord_tmp in path[i][1:]:
                         coord.assign(coord_tmp[0], coord_tmp[1])
                         p += str(coord.x) + ',' + str(coord.y) + ' '
                         abspos += coord
 
-                if path[i][0] == 'L':
+                if command == 'L':
                     for coord_tmp in path[i][1:]:
                         coord.assign(coord_tmp[0], coord_tmp[1])
                         p += str(coord.x - abspos.x) + ',' + str(coord.y - abspos.y) + ' '
@@ -304,44 +282,50 @@ class SvgPath():
 
 
             # 'horizontal line' command
-            elif re.match('H', path[i][0], re.I):
-                p += path[i][0].lower()+' '
+            #    H (x)+
+            # -> H (dest_x)+
+            elif command_lower == 'h':
+                p += 'h '
 
-                if path[i][0] == 'h':
+                if command == 'h':
                     for coord_tmp in path[i][1:]:
                         coord.assign(coord_tmp[0], 0)
                         p += str(coord.x) + ' '
                     abspos.x += coord.x
 
-                if path[i][0] == 'H':
+                if command == 'H':
                     for coord_tmp in path[i][1:]:
                         coord.assign(coord_tmp[0], 0)
                         p += str(coord.x - abspos.x) + ' '
                         abspos.x = coord.x
 
             # 'vertical line' command
-            elif re.match('V', path[i][0], re.I):
-                p += path[i][0].lower() + ' '
+            #    V (y)+
+            # -> V (dest_y)+
+            elif command_lower == 'v':
+                p += 'v '
 
-                if path[i][0] == 'v':
+                if command == 'v':
                     for coord_tmp in path[i][1:]:
                         coord.assign(0, coord_tmp[0])
                         p += str(coord.y) + ' '
                         abspos.y += coord.y
 
-                if path[i][0] == 'V':
+                if command == 'V':
                     for coord_tmp in path[i][1:]:
                         coord.assign(0, coord_tmp[0])
                         p += str(coord.y - abspos.y) + ' '
                         abspos.y = coord.y
 
             # 'close shape' command
-            elif re.match('Z', path[i][0], re.I):
-                p += path[i][0].lower() + ' '
-                abspos = abspos + (patho - abspos)
+            #    Z
+            # -> Z
+            elif command_lower == 'z':
+                p += 'z '
+                abspos = abspos + (patho - abspos) # TODO: just assign abspos = patho directly?
 
             else:
-                msg.error("Found an unsupported SVG path command '%s'" % path[i][0])
+                msg.error("Found an unsupported SVG path command '%s' in _makeRelative" % path[i][0])
 
 
         return p
@@ -396,14 +380,18 @@ class SvgPath():
         bbox_top_left = Point()
         bbox_bot_right = Point()
 
-        # for the t/T (shorthand bezier) command, we need to keep track
-        # of the last bezier control point from previous Q/q/T/t command
+        # for the s/S/t/T (shorthand bezier) commands, we need to keep track
+        # of the last bezier control point from previous C/c/S/s/Q/q/T/t command
+        # TODO: check behaviour when non-Bezier command precedes shorthand bezier
         last_bezier_control_point = Point()
 
         for i in range(0, len(path)):
 
+            command = path[i][0]
+
             # 'move to' command
-            if re.match('m', path[i][0]):
+            # m (dest)+
+            if command == 'm':
 
                 if i == 0:
                     # the first coordinate is the start of both top left and bottom right
@@ -413,7 +401,7 @@ class SvgPath():
                 else:
                     new_point = Point(path[i][1][0], path[i][1][1])
                     abs_point += new_point
-                    bbox_top_left, bbox_bot_right = svg.boundary_box_check(bbox_top_left,
+                    bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left,
                                                                        bbox_bot_right,
                                                                        abs_point)
 
@@ -421,12 +409,13 @@ class SvgPath():
                 for coord in path[i][2:]:
                     new_point = Point(coord[0], coord[1])
                     abs_point += new_point
-                    bbox_top_left, bbox_bot_right = svg.boundary_box_check(bbox_top_left,
+                    bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left,
                                                                        bbox_bot_right,
                                                                        abs_point)
 
             # cubic Bezier curve command
-            elif re.match('c', path[i][0]):
+            # c (control1 control2 dest)+
+            elif command == 'c':
 
                 bezier_curve_path = []
 
@@ -442,37 +431,22 @@ class SvgPath():
 
                 for n in range(0, len(bezier_curve_path), 4):
 
-                    # clear bezier point arrays
-                    bezier_points_x = []
-                    bezier_points_y = []
-
-                    # split points of bezier into 'x' and 'y' coordinate arrays
-                    # as this is what the point array function expects
-                    for m in range(0, 4):
-                        bezier_points_x.append(bezier_curve_path[n+m].x)
-                        bezier_points_y.append(bezier_curve_path[n+m].y)
-
-                    # calculate the individual points along the bezier curve for 'x'
-                    # and 'y'
-                    points_x = svg.calculate_points_of_cubic_bezier(bezier_points_x, 100)
-                    points_y = svg.calculate_points_of_cubic_bezier(bezier_points_y, 100)
-
-                    bezier_point_array = []
-
-                    # put those points back into a Point type array
-                    for n in range(0, len(points_x)):
-                        bezier_point_array.append(Point(points_x[n], points_y[n]))
-
-                    # check each point if it extends the boundary box
-                    for n in range(0, len(bezier_point_array)):
-                        bbox_top_left, bbox_bot_right = svg.boundary_box_check(
-                            bbox_top_left,
-                            bbox_bot_right,
-                            bezier_point_array[n])
+                    bezier_points_x, bezier_points_y = zip(*[(p.x, p.y) for p in bezier_curve_path[n:n+4]])
+                    xmin, xmax = cubic_bezier_bounds(*bezier_points_x)
+                    ymin, ymax = cubic_bezier_bounds(*bezier_points_y)
+                    bbox_top_left, bbox_bot_right = boundary_box_check(
+                        bbox_top_left,
+                        bbox_bot_right,
+                        Point(xmin, ymin))
+                    bbox_top_left, bbox_bot_right = boundary_box_check(
+                        bbox_top_left,
+                        bbox_bot_right,
+                        Point(xmax, ymax))
 
 
             # quadratic Bezier curve command
-            elif re.match('q', path[i][0]):
+            # q (control1 dest)+
+            elif command == 'q':
 
                 bezier_curve_path = []
 
@@ -490,25 +464,22 @@ class SvgPath():
 
                 for n in range(0, len(bezier_curve_path), 3):
 
-                    # split points of bezier into 'x' and 'y' coordinate arrays
-                    # as this is what the point array function expects
                     bezier_points_x, bezier_points_y = zip(*[(p.x, p.y) for p in bezier_curve_path[n:n+3]])
-
-                    # calculate the individual points along the bezier curve for 'x'
-                    # and 'y'
-                    points_x = svg.calculate_points_of_quadratic_bezier(bezier_points_x, 100)
-                    points_y = svg.calculate_points_of_quadratic_bezier(bezier_points_y, 100)
-
-                    # check each point if it extends the boundary box
-                    for point in (Point(points_x[n], points_y[n]) for n in range(len(points_x))):
-                        bbox_top_left, bbox_bot_right = svg.boundary_box_check(
-                                bbox_top_left,
-                                bbox_bot_right,
-                                point)
+                    xmin, xmax = quadratic_bezier_bounds(*bezier_points_x)
+                    ymin, ymax = quadratic_bezier_bounds(*bezier_points_y)
+                    bbox_top_left, bbox_bot_right = boundary_box_check(
+                        bbox_top_left,
+                        bbox_bot_right,
+                        Point(xmin, ymin))
+                    bbox_top_left, bbox_bot_right = boundary_box_check(
+                        bbox_top_left,
+                        bbox_bot_right,
+                        Point(xmax, ymax))
 
 
-            # simple cubic Bezier curve command
-            elif re.match('t', path[i][0]):
+            # simple quadratic Bezier curve command
+            # t (dest)+
+            elif command == 't':
                 bezier_curve_path = []
 
                 for n in range(1, len(path[i])):
@@ -516,6 +487,43 @@ class SvgPath():
                     coord = path[i][n]
                     point = Point(coord[0], coord[1])
                     end_point = abs_point + point
+                    # construct control point by reflecting through current point
+                    diff = Point(abs_point.x - last_bezier_control_point.x,
+                                 abs_point.y - last_bezier_control_point.y)
+                    control_point = abs_point + diff
+                    bezier_curve_path.append(control_point)
+                    bezier_curve_path.append(end_point)
+                    last_bezier_control_point = control_point
+                    new_point = Point(path[i][n][0], path[i][n][1])
+                    abs_point += new_point
+
+
+                for n in range(0, len(bezier_curve_path), 3):
+
+                    bezier_points_x, bezier_points_y = zip(*[(p.x, p.y) for p in bezier_curve_path[n:n+3]])
+                    xmin, xmax = quadratic_bezier_bounds(*bezier_points_x)
+                    ymin, ymax = quadratic_bezier_bounds(*bezier_points_y)
+                    bbox_top_left, bbox_bot_right = boundary_box_check(
+                        bbox_top_left,
+                        bbox_bot_right,
+                        Point(xmin, ymin))
+                    bbox_top_left, bbox_bot_right = boundary_box_check(
+                        bbox_top_left,
+                        bbox_bot_right,
+                        Point(xmax, ymax))
+
+
+
+            # simple cubic Bezier curve command
+            elif command == 's':
+                bezier_curve_path = []
+
+                for n in range(1, len(path[i])):
+                    bezier_curve_path.append(abs_point)
+                    coord = path[i][n]
+                    point = Point(coord[0], coord[1])
+                    end_point = abs_point + point
+                    # construct control point by reflecting through current point
                     diff = Point(abs_point.x - last_bezier_control_point.x,
                                  abs_point.y - last_bezier_control_point.y)
                     control_point = abs_point + diff
@@ -529,72 +537,52 @@ class SvgPath():
 
                 for n in range(0, len(bezier_curve_path), 4):
 
-                    # clear bezier point arrays
-                    bezier_points_x = []
-                    bezier_points_y = []
+                    bezier_points_x, bezier_points_y = zip(*[(p.x, p.y) for p in bezier_curve_path[n:n+3]])
+                    xmin, xmax = quadratic_bezier_bounds(*bezier_points_x)
+                    ymin, ymax = quadratic_bezier_bounds(*bezier_points_y)
+                    bbox_top_left, bbox_bot_right = boundary_box_check(
+                        bbox_top_left,
+                        bbox_bot_right,
+                        Point(xmin, ymin))
+                    bbox_top_left, bbox_bot_right = boundary_box_check(
+                        bbox_top_left,
+                        bbox_bot_right,
+                        Point(xmax, ymax))
 
-                    # split points of bezier into 'x' and 'y' coordinate arrays
-                    # as this is what the point array function expects
-                    for m in range(0, 4):
-                        bezier_points_x.append(bezier_curve_path[n+m].x)
-                        bezier_points_y.append(bezier_curve_path[n+m].y)
-
-                    # calculate the individual points along the bezier curve for 'x'
-                    # and 'y'
-                    points_x = svg.calculate_points_of_cubic_bezier(bezier_points_x, 100)
-                    points_y = svg.calculate_points_of_cubic_bezier(bezier_points_y, 100)
-
-                    bezier_point_array = []
-
-                    # put those points back into a Point type array
-                    for n in range(0, len(points_x)):
-                        bezier_point_array.append(Point(points_x[n], points_y[n]))
-
-                    # check each point if it extends the boundary box
-                    for m in range(0, len(bezier_point_array)):
-                        bbox_top_left, bbox_bot_right = svg.boundary_box_check(
-                                bbox_top_left,
-                                bbox_bot_right,
-                                bezier_point_array[m])
-
-
-
-    #        elif re.match('S', path[i][0], re.I):
-    #            pass
 
             # 'line to'  command
-            elif re.match('l', path[i][0]):
+            elif command == 'l':
                 for coord in path[i][1:]:
                     new_point = Point(coord[0], coord[1])
                     abs_point += new_point
-                    bbox_top_left, bbox_bot_right = svg.boundary_box_check(bbox_top_left,
+                    bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left,
                                                                        bbox_bot_right,
                                                                        abs_point)
 
             # 'horizontal line' command
-            elif re.match('h', path[i][0]):
+            elif command == 'h':
                 for coord in path[i][1:]:
                     new_point = Point(coord[0], 0)
                     abs_point += new_point
-                    bbox_top_left, bbox_bot_right = svg.boundary_box_check(bbox_top_left,
+                    bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left,
                                                                        bbox_bot_right,
                                                                        abs_point)
 
             # 'vertical line' command
-            elif re.match('v', path[i][0]):
+            elif command == 'v':
                 for coord in path[i][1:]:
                     new_point = Point(0, coord[0])
                     abs_point += new_point
-                    bbox_top_left, bbox_bot_right = svg.boundary_box_check(bbox_top_left,
+                    bbox_top_left, bbox_bot_right = boundary_box_check(bbox_top_left,
                                                                        bbox_bot_right,
                                                                        abs_point)
 
             # 'close shape' command
-            elif re.match('Z', path[i][0], re.I):
+            elif command == 'z':
                 pass
 
             else:
-                print("ERROR: found an unsupported SVG path command " + str(path[i][0]))
+                print("ERROR: found an unsupported SVG path command {} in _getDimensions".format(str(path[i][0])))
 
         self._bbox_top_left = bbox_top_left
         self._bbox_bot_right = bbox_bot_right
@@ -670,7 +658,7 @@ class SvgPath():
                         new_p += str(tmpp.x) + "," + str(tmpp.y) + " "
 
 
-            parsed = self._svgGrammar.parseString(new_p)
+            parsed = self.grammar.parseString(new_p)
             mirrored = self._mirrorHorizontally(parsed)
 
             if mirror == False:
@@ -693,7 +681,6 @@ class SvgPath():
             self._record[digest]['height'] = self._height
 
         return
-
 
 
 
@@ -723,6 +710,9 @@ class SvgPath():
         # TODO: legacy
         pd = path
 
+        # for the s/S/t/T (shorthand bezier) commands, we need to keep track
+        # of the last bezier control point from previous C/c/S/s/Q/q/T/t command
+        # TODO: check behaviour when non-Bezier command precedes shorthand bezier
         last_bezier_control_point = Point()
 
         for i in range(0, len(pd)):
@@ -780,10 +770,10 @@ class SvgPath():
 
                     # calculate the individual points along the bezier curve for 'x'
                     # and 'y'
-                    points_x = svg.calculate_points_of_cubic_bezier(bezier_points_x, steps)
-                    points_y = svg.calculate_points_of_cubic_bezier(bezier_points_y, steps)
+                    points_x = calculate_points_of_cubic_bezier(bezier_points_x, steps)
+                    points_y = calculate_points_of_cubic_bezier(bezier_points_y, steps)
 
-                    path_length = svg.calculate_length_of_path_points(points_x, points_y)
+                    path_length = calculate_length_of_path_points(points_x, points_y)
 
                     if path_length == 0:
                         steps_tmp = 1
@@ -833,10 +823,10 @@ class SvgPath():
 
                     # calculate the individual points along the bezier curve for 'x'
                     # and 'y'
-                    points_x = svg.calculate_points_of_quadratic_bezier(bezier_points_x, steps)
-                    points_y = svg.calculate_points_of_quadratic_bezier(bezier_points_y, steps)
+                    points_x = calculate_points_of_quadratic_bezier(bezier_points_x, steps)
+                    points_y = calculate_points_of_quadratic_bezier(bezier_points_y, steps)
 
-                    path_length = svg.calculate_length_of_path_points(points_x, points_y)
+                    path_length = calculate_length_of_path_points(points_x, points_y)
                     skip = int(ceil(steps / (path_length / length)))
 
                     bezier_point_array = []
@@ -883,10 +873,10 @@ class SvgPath():
 
                     # calculate the individual points along the bezier curve for 'x'
                     # and 'y'
-                    points_x = svg.calculate_points_of_cubic_bezier(bezier_points_x, steps)
-                    points_y = svg.calculate_points_of_cubic_bezier(bezier_points_y, steps)
+                    points_x = calculate_points_of_cubic_bezier(bezier_points_x, steps)
+                    points_y = calculate_points_of_cubic_bezier(bezier_points_y, steps)
 
-                    path_length = svg.calculate_length_of_path_points(points_x, points_y)
+                    path_length = calculate_length_of_path_points(points_x, points_y)
                     skip = int(ceil(steps / (path_length / length)))
 
                     bezier_point_array = []
@@ -929,7 +919,7 @@ class SvgPath():
 
 
             else:
-                msg.error("Found an unsupported SVG path command, '%s'" % cmd)
+                msg.error("Found an unsupported SVG path command, '%s' in _makeCoordList" % cmd)
 
 
         points.append(p)

@@ -14,8 +14,8 @@ class Board():
 
         self._module_dict = config.brd
         self._module_routing = config.rte
-        module = Module(self._module_dict,
-                        self._module_routing)
+        self._module = Module(self._module_dict,
+                              self._module_routing)
 
-
-
+    def generate(self):
+        self._module.generate()
