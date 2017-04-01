@@ -3,6 +3,7 @@
 import os
 import json
 import argparse
+import linecache, tracemalloc
 
 try:
     from os import getcwdu as getcwd
@@ -23,6 +24,31 @@ from .utils import bom
 from .utils import coord_file
 from .utils.board import Board
 from .utils.json import dictFromJsonFile
+
+
+def display_top(snapshot, key_type='lineno', limit=10):
+    snapshot = snapshot.filter_traces((
+        tracemalloc.Filter(False, '<frozen importlib._bootstrap>'),
+        tracemalloc.Filter(False, '<unknown>'),
+    ))
+    top_stats = snapshot.statistics(key_type)
+
+    print("Top %s lines" % limit)
+    for index, stat in enumerate(top_stats[:limit], 1):
+        frame = stat.traceback[0]
+        # replace '/path/to/module/file.py' with 'module/file.py'
+        filename = os.sep.join(frame.filename.split(os.sep)[-2:])
+        print('#%s: %s:%s: %.1f KiB' % (index, filename, frame.lineno, stat.size/1024))
+        line = linecache.getline(frame.filename, frame.lineno).strip()
+        if line:
+            print('\t%s' % line)
+
+    other = top_stats[limit:]
+    if other:
+        size = sum(stat.size for stat in other)
+        print('%s other: %.1f KiB' % (len(other), size/1024))
+    total = sum(stat.size for stat in top_stats)
+    print('Total allocated size: %.1f KiB' % (total/1024))
 
 
 def cmdArgSetup(pcbmode_version):
@@ -376,6 +402,7 @@ def makeConfig(name, version, cmdline_args):
 
 
 def main():
+    tracemalloc.start(10)
 
     # Get PCBmodE version
     version = utils.get_git_revision()
@@ -455,6 +482,8 @@ def main():
 
     msg.info("Done!")
 
+    snapshot = tracemalloc.take_snapshot()
+    display_top(snapshot)
 
 
 if __name__ == "__main__":
