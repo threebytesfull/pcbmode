@@ -31,3 +31,20 @@ class TestBoard(unittest.TestCase):
 
         self.assertIs(board._module_dict, self.c.get('brd'), 'module_dict attribute should be same object as config.brd')
         self.assertIs(board._module_routing, self.c.get('rte'), 'module_routing attribute should be same object as config.rte')
+
+    @patch('pcbmode.utils.board.Module')
+    def test_board_generates_module(self, mock_module):
+        """
+        When generate() is called on a Board object, it should call generate()
+        on its Module object.
+        """
+        instance = mock_module.return_value
+        instance.generate.return_value = None
+
+        board = Board()
+        self.assertTrue(mock_module.called, 'Board should instantiate a Module')
+
+        self.assertFalse(instance.generate.called, 'Board should not generate its Module until generate() called')
+        result = board.generate()
+        self.assertTrue(instance.generate.called, 'Board should generate its Module')
+        self.assertTrue(result is None, 'Board generation should return nothing')
