@@ -783,7 +783,7 @@ class SvgPath():
 
                     bezier_point_array = []
 
-                    # put thos points back into a Point type array
+                    # put those points back into a Point type array
                     for n in range(0, len(points_x), skip):
                         bezier_point_array.append(Point(points_x[n], points_y[n]))
                     bezier_point_array.append(Point(points_x[len(points_x)-1], points_y[len(points_x)-1]))

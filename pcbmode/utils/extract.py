@@ -27,7 +27,7 @@ def extract(extract, extract_refdefs):
         msg.info("Extracting components info")
         extractComponents(svg_in)
 
-        msg.info("Extracting documentation and indicies locations")
+        msg.info("Extracting documentation and indices locations")
         extractDocs(svg_in)
 
     if extract_refdefs == True:
@@ -235,7 +235,7 @@ def extractRouting(svg_in):
             style_text = route.get('style') or ''
 
             # This hash digest provides a unique identifier for
-            # the route based on its path, location, and style
+            # the route based on its path and style
             digest = utils.digest(path+
                                   #str(location.x)+
                                   #str(location.y)+
@@ -343,7 +343,7 @@ def extractRouting(svg_in):
             vias_dict[digest]['assembly'] = {'refdef':{'show':False}}
 
 
-            # Get the vis's ID
+            # Get the via's ID
             try:
                 via_id = marker.get('{'+config.cfg['ns']['pcbmode']+'}id')
             except:

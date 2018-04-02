@@ -29,8 +29,8 @@ class Shape():
 
         self._shape_dict = shape
 
-        # Invert rotation so it's clock-wise. Inkscape is counter-clockwise and
-        # it's unclear to ma what's the "right" direction. clockwise makse more
+        # Invert rotation so it's clockwise. Inkscape is counter-clockwise and
+        # it's unclear to me what's the "right" direction. clockwise makes more
         # sense to me. This should be the only place to make the change.
         self._inv_rotate = -1
 
@@ -133,7 +133,7 @@ class Shape():
         elif self._type in ['path']:
             path = self._shape_dict.get('value')
         else:
-            msg.error("'%s' is not a recongnised shape type" % self._type)
+            msg.error("'%s' is not a recognised shape type" % self._type)
 
 
         self._path = SvgPath(path, gerber_lp)

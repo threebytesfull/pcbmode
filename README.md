@@ -27,7 +27,9 @@ PCBmodE is developed and tested under Linux and Mac OS X, so it might or might n
 [coveralls-url]: https://coveralls.io/github/threebytesfull/pcbmode?branch=unittests
 
 ### The name
+
 The 'mod' in PCBmodE has a double meaning. The first is short for 'modern' (in contrast to tired old EDA tools). The second is a play on the familiar 'modifications' or 'mods' done to imperfect PCBs. Call it 'PCB mode' or 'PCB mod E', whichever you prefer.
 
 ### License
+
 PCBmodE versions 3.0 and above are licensed under the [MIT License](http://opensource.org/licenses/MIT). Previous versions were licensed under the Apache 2.0 License.

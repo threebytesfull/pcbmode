@@ -16,7 +16,7 @@ class Style():
     Manages the logic for determining the style of an object
     based on its shape definition, 'shape_dict'. In the layout
     file, default 'fill' or 'stroke' styles are defined for the
-    various layers; these will be used if otherwise not specified
+    various layers; these will be used if not otherwise specified
     in the shape definition.
 
     'sub_item' is used to be more specific within the style definition.

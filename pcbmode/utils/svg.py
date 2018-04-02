@@ -239,7 +239,7 @@ def placementMarkerPath():
 
 def mirror_transform(transform, axis='y'):
     """
-    Returns a mirrored transfrom
+    Returns a mirrored transform
     """
 
     mirrored_transform = transform
@@ -293,7 +293,7 @@ def makeSvgLayers(top_layer, transform=None, refdef=None):
             assembly_dict = [{"name": "assembly", "type": "assembly"}]
             solderpaste_dict = [{"name": "solderpaste", "type": "solderpaste"}]
 
-            # Layer appear in Inkscape first/top to bottom/last
+            # Layers appear in Inkscape first/top to bottom/last
             sheets = placement_dict + assembly_dict + solderpaste_dict + sheets
 
         for sheet in reversed(sheets):
@@ -338,7 +338,7 @@ def makeSvgLayers(top_layer, transform=None, refdef=None):
                     try:
                         style = utils.dictToStyle(config.stl['layout']['conductor'][cond_type].get(layer_name))
                     except:
-                        # See comment above for rationalle
+                        # See comment above for rationale
                         style = utils.dictToStyleText(config.stl['layout']['conductor'][cond_type][layer_name.split('-')[0]])
 
 

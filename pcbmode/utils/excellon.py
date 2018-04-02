@@ -93,7 +93,7 @@ class Excellon():
         ex = []
         for i, diameter in enumerate(drills):
             # This is probably not necessary, but I'm not 100% certain
-            # that if the item order of a dict is gurenteed. If not
+            # that if the item order of a dict is guaranteed. If not
             # the result can be quite devastating where drill
             # diameters are wrong!
             # Drill index must be greater than 0

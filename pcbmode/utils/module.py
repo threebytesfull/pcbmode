@@ -256,7 +256,7 @@ class Module():
         """
         Places the component on the board.
 
-        'component_type' is the content of the 'type' fiels of the
+        'component_type' is the content of the 'type' field of the
         placed group. This is used by the extractor to identify the
         type of component ('component', 'via', 'shape')
         """
@@ -553,9 +553,9 @@ class Module():
                 shape.setStyle(style)
 
                 # Routes are a special case where they are used as-is
-                # counting on Inkscapes 'optimised' setting to modify
-                # the path such that placement is refleced in
-                # it. Therefor we use the original path, not the
+                # counting on Inkscape's 'optimised' setting to modify
+                # the path such that placement is reflected in
+                # it. Therefore we use the original path, not the
                 # transformed one as usual
                 use_original_path = True
                 mirror_path = False
@@ -598,11 +598,11 @@ class Module():
 #                # Due to the limitation of the Gerber format, and the method chosen
 #                # for applying masks onto pours, it is not possible to have copper
 #                # pour material inside of paths that have more than a single segment.
-#                # In order to make the apperance in the SVG and Gerbers consistent,
+#                # In order to make the appearance in the SVG and Gerbers consistent,
 #                # each path segment is added with a 'fill'. In the future, when the
 #                # *actual* shape is calculated, it may be possible to avoid this
 #                # hack. On the other hand, one can argue that having pours inside of
-#                # shapes doesn't make sense anyway, because it alters its apperance,
+#                # shapes doesn't make sense anyway, because it alters its appearance,
 #                # and such shapes are stylistic anyway. OK, back to code now...
 #                gerber_lp = shape.getGerberLP()
 #                if gerber_lp is not None:
@@ -741,9 +741,9 @@ class Module():
         try:
             location = config.brd['layer-index']['location']
         except:
-            # If not location is specified, put the drill index at the
+            # If no location is specified, put the drill index at the
             # top right of the board. The 'gap' defines the extra
-            # spcae between the top of the largest drill and the
+            # space between the top of the largest drill and the
             # board's edge
             gap = 2
             location = [self._width/2+gap, self._height/2-rect_height/2]
@@ -825,9 +825,9 @@ class Module():
         try:
             location = config.brd['drill-index']['location']
         except:
-            # If not location is specified, put the drill index at the
+            # If no location is specified, put the drill index at the
             # bottom left of the board. The 'gap' defines the extra
-            # spcae between the top of the largest drill and the
+            # space between the top of the largest drill and the
             # board's edge
             gap = 2
             location = [-self._width/2, -(self._height/2+gap)]
@@ -864,7 +864,7 @@ class Module():
         # "new line"
         location.y = -(largest_drill/2 + 1.5)
 
-        # TODO: this hack'ish thing for aligning the text isn't going
+        # TODO: this hackish thing for aligning the text isn't going
         # to work when the font is changed in the stylesheet
         if float(longest_text*0.5) > largest_drill:
             location.x = longest_text*0.3
@@ -904,7 +904,7 @@ class Module():
 
     def _getModuleElement(self):
         """
-        Returns the skelaton of an Inkscape SVG element
+        Returns the skeleton of an Inkscape SVG element
         """
         module = et.Element('svg',
                             width="%s%s" % (self._width, config.brd['config']['units']),

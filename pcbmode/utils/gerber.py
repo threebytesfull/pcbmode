@@ -155,10 +155,10 @@ class Gerber():
         self._aperture_list = []
 
         # Gerber apertures are defined at the begining of the file and
-        # then refered to by number. 1--10 are reserved and cannot be
-        # used, so wer start the design's apersute number at 20,
-        # leaving 10 to define fixed apertures for closed shapesm
-        # flashes, wtc.lets us have
+        # then referred to by number. 1--10 are reserved and cannot be
+        # used, so we start the design's aperture number at 20,
+        # leaving 10 to define fixed apertures for closed shapes,
+        # flashes, etc.
         self._aperture_num = 20
 
         self._closed_shape_aperture_num = 10
@@ -356,7 +356,7 @@ class Gerber():
                 except:
                     polarity = 'D'
 
-                # Change the polarity of neccessary
+                # Change the polarity if neccessary
                 if polarity != current_polarity:
                     commands.append("%%LP%s*%%\n" % polarity)
                     current_polarity = polarity
@@ -365,7 +365,7 @@ class Gerber():
                     # Start of a closed shape
                     commands.append("G36*\n")
                 else:
-                    # Chahge aperture to match stroke width
+                    # Change aperture to match stroke width
                     commands.append("D%d*\n" % self._apertures[cmd_set['stroke-width']])
 
                 # Add the path segment's commands
@@ -424,13 +424,13 @@ class Gerber():
         polarity_sequence = ''
         order = ''
 
-        # Create a list of lineat points from the input path
+        # Create a list of linear points from the input path
         coords = self._pathToPoints(path)
 
         coord_list = []
 
-        # Each 'segment' correspond to a shape within the complete
-        # poth.
+        # Each 'segment' corresponds to a shape within the complete
+        # path.
         for segment in coords:
 
             segment_coord_list = []
@@ -617,7 +617,7 @@ class Gerber():
        cmd_polarity_opt_dark = pyp.Literal('D').setParseAction(pyp.replaceWith('dark'))
        cmd_polarity_opt_clear = pyp.Literal('C').setParseAction(pyp.replaceWith('clear'))
 
-       cmd_linear_int = pyp.Literal('G01').suppress() # lineal interpolation
+       cmd_linear_int = pyp.Literal('G01').suppress() # linear interpolation
        cmd_circ_int_cw = pyp.Literal('G02').suppress() # circular int. clockwise
        cmd_circ_int_ccw = pyp.Literal('G03').suppress() # circular int. counter-clockwise
 

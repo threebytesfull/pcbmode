@@ -25,7 +25,7 @@ class Point:
 
     def __repr__(self, d=2):
         """
-        return a string representation; 'd' determines amount
+        return a string representation; 'd' determines number
         of significant digits to display
         """
         return "[%.*f, %.*f]" % (d, self.x, d, self.y)
