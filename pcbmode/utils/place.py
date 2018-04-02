@@ -49,7 +49,7 @@ def placeShape(shape, svg_layer, invert=False, original=False):
     # Set style string
     element.set('style', style_string)
 
-    # Set style type in pcbmode namespace. This is later used to easliy
+    # Set style type in pcbmode namespace. This is later used to easily
     # identify the type when the path is converted to Gerber format
     element.set('{'+config.cfg['ns']['pcbmode']+'}style', style_type)
 
@@ -113,7 +113,7 @@ def placeDrill(drill,
 
 
 
-    # place the size of the drill; id the drill element has a
+    # place the size of the drill; if the drill element has a
     # "show_diameter": "no", then this can be suppressed
     # default to 'yes'
     show_diameter = drill.get('show_diameter') or 'yes'

@@ -56,7 +56,7 @@ def calculate_points_of_cubic_bezier(p, steps = 10):
     This function receives four points [start, control, control, end]
     and returns points on the cubic Bezier curve that they define. As
     'steps' decreases, so do the amount of points that are returned,
-    making the curve less, well, curvey.
+    making the curve less, well, curvy.
 
     The code for this function was adapted/copied from:
     http://www.niksula.cs.hut.fi/~hkankaan/Homepages/bezierfast.html

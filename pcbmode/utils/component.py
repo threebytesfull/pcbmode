@@ -156,9 +156,9 @@ class Component():
         #------------------------------------------------------
         # Invert layers
         #------------------------------------------------------
-        # If the placement is on the bottom of the baord then we need
+        # If the placement is on the bottom of the board then we need
         # to invert the placement of all components. This affects the
-        # surface laters but also internal layers
+        # surface layers but also internal layers
 
         if self._layer == 'bottom':
             layers = config.stk['layer-names']

@@ -217,7 +217,7 @@ def makeConfig(name, version, cmdline_args):
                             'paths_db.json')
 
     # Open database file. If it doesn't exist, leave the database in
-    # ots initial state of {}
+    # its initial state of {}
     if os.path.isfile(filename):
         config.pth = dictFromJsonFile(filename)
 
@@ -229,7 +229,7 @@ def makeConfig(name, version, cmdline_args):
                             config.brd['files'].get('routing-json') or config.cfg['name'] + '_routing.json')
 
     # Open database file. If it doesn't exist, leave the database in
-    # ots initial state of {}
+    # its initial state of {}
     if os.path.isfile(filename):
         config.rte = dictFromJsonFile(filename)
     else:
@@ -252,7 +252,7 @@ def makeConfig(name, version, cmdline_args):
 
     config.cfg['namespace'] = config.cfg['ns']
 
-    # Get amount of significant digits to use for floats
+    # Get number of significant digits to use for floats
     config.cfg['significant-digits'] = config.cfg.get('significant-digits', 8)
 
     if cmdline_args.sig_dig != False:

@@ -65,7 +65,7 @@ class Footprint():
             try:
                 pad_name = pins[pin]['layout']['pad']
             except:
-                msg.error("Each defined 'pin' must have a 'pad' name that is defined in the 'pads' dection of the footprint.")
+                msg.error("Each defined 'pin' must have a 'pad' name that is defined in the 'pads' section of the footprint.")
 
             try:
                 pad_dict = self._footprint['pads'][pad_name]
@@ -266,7 +266,7 @@ class Footprint():
             for shape_dict in shapes:
                 layers = utils.getExtendedLayerList(shape_dict.get('layers') or ['top'])
                 for layer in layers:
-                    # Mirror the shape if it's text and on bottom later,
+                    # Mirror the shape if it's text and on bottom layer,
                     # but let explicit shape setting override
                     if layer == 'bottom':
                         if shape_dict['type'] == 'text':

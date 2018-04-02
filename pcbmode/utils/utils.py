@@ -66,7 +66,7 @@ def openBoardSVG():
 
 def parseDimension(string):
     """
-    Parses a dimention recieved from the source files, separating the units,
+    Parses a dimension received from the source files, separating the units,
     if specified, from the value
     """
     if string != None:
@@ -317,7 +317,7 @@ def checkForPoursInLayer(layer):
 
 def parse_refdef(refdef):
     """
-    Parses a reference designator and returns the refdef categoty,
+    Parses a reference designator and returns the refdef category,
     number, and extra characters
     """
 
@@ -463,7 +463,7 @@ def textToPath(font_data, text, letter_spacing, line_height, scale_factor):
     text_width = 0
     text_path = ''
 
-    # split text into charcters and find unicade chars
+    # split text into charcters and find Unicode chars
     try:
         text = re.findall(r'(\&#x[0-9abcdef]*;|.|\n)', text)
     except:
@@ -576,7 +576,7 @@ def parseTransform(transform):
         data['type'] = 'matrix'
         data['location'], data['rotate'], data['scale'] = parseSvgMatrix(transform)
     else:
-        msg.error("Found a path transform that cannot be handled, %s. SVG stansforms should be in the form of 'translate(num,num)' or 'matrix(num,num,num,num,num,num)" % transform)
+        msg.error("Found a path transform that cannot be handled, %s. SVG tansforms should be in the form of 'translate(num,num)' or 'matrix(num,num,num,num,num,num)" % transform)
 
     return data
 
