@@ -20,11 +20,11 @@ PCBmodE is developed and tested under Linux and Mac OS X, so it might or might n
 
 [Documentation](http://pcbmode.readthedocs.org)
 
-[travis-image]: https://travis-ci.org/threebytesfull/pcbmode.svg?branch=unittests
+[travis-image]: https://travis-ci.org/threebytesfull/pcbmode.svg?branch=develop
 [travis-url]: https://travis-ci.org/threebytesfull/pcbmode
 
-[coveralls-image]: https://coveralls.io/repos/threebytesfull/pcbmode/badge.svg?branch=unittests&service=github
-[coveralls-url]: https://coveralls.io/github/threebytesfull/pcbmode?branch=unittests
+[coveralls-image]: https://coveralls.io/repos/threebytesfull/pcbmode/badge.svg?branch=develop&service=github
+[coveralls-url]: https://coveralls.io/github/threebytesfull/pcbmode?branch=develop
 
 ### The name
 
