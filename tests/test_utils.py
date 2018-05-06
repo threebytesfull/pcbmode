@@ -224,8 +224,34 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(result, {'apple':3, 'banana':15, 'pear':10, 'orange':0.3}, 'should add dicts correctly')
 
     # process_meander_type tests
-    def test_process_meander_type(self):
-        pass
+    def test_process_meander_type_round(self):
+        test_cases = {
+            'ignored': {},
+            'radius: 5': { 'radius': 5.0 },
+            'theta: -1.2': { 'theta': -1.2 },
+            'bus-width: 5; pitch: 10': { 'bus-width': 5.0, 'pitch': 10.0 },
+            '  \t  radius \t\t  :  \t  3  ; ': { 'radius': 3.0 },
+        }
+        for test_string, test_expected_output in test_cases.items():
+            meander = utils.process_meander_type(test_string, 'meander-round')
+            for param in 'radius theta bus-width pitch'.split():
+                self.assertEqual(meander[param], test_expected_output[param] if param in test_expected_output else None)
+
+    def test_process_meander_type_sawtooth(self):
+        test_cases = {
+            'ignored': {},
+            'base-length: 2.32': { 'base-length': 2.32 },
+            'amplitude:5;': { 'amplitude': 5.0 },
+            'bus-width:2.3;\npitch:\t5\t': { 'bus-width': 2.3, 'pitch': 5.0 },
+        }
+        for test_string, test_expected_output in test_cases.items():
+            meander = utils.process_meander_type(test_string, 'meander-sawtooth')
+            for param in 'base-length amplitude bus-width pitch'.split():
+                self.assertEqual(meander[param], test_expected_output[param] if param in test_expected_output else None)
+
+    def test_process_meander_type_unknown(self):
+        with self.assertRaisesRegex(Exception, r'unrecognised meander type \'wander\''):
+            _ = utils.process_meander_type('anything here', 'wander')
 
     # checkForPoursInLayer tests
     def test_checkForPoursInLayer(self):

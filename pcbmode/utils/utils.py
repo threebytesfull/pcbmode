@@ -8,12 +8,7 @@ import math
 from operator import itemgetter # for sorting lists by dict value
 from lxml import etree as et
 
-try:
-    # Python 3
-    import html.parser as HTMLParser
-except:
-    # Python 2
-    import HTMLParser
+import html.parser as HTMLParser
 
 from pkg_resources import get_distribution
 
@@ -269,15 +264,14 @@ def process_meander_type(type_string, meander_type):
     elif (meander_type == 'meander-sawtooth'):
         look_for = ['base-length', 'amplitude', 'bus-width', 'pitch']
     else:
-        print("ERROR: unrecognised meander type")
-        reaise
+        msg.error('unrecognised meander type \'{}\''.format(meander_type))
 
     meander = {}
 
-    regex = '\s*%s\s*:\s*(?P<v>[^;]*)'
+    regex = '\s*{}\s*:\s*(?P<v>[^;]*)'
 
     for param in look_for:
-        tmp = re.search(regex % param, type_string)
+        tmp = re.search(regex.format(param), type_string)
         if tmp is not None:
             meander[param] = float(tmp.group('v'))
 
