@@ -370,6 +370,7 @@ class TestUtils(unittest.TestCase):
             (None, {'type':'translate', 'location':Point()}),
             ('translate(0,0)', {'type':'translate', 'location':Point()}),
             (' translate( 0.5, +70)', {'type':'translate', 'location':Point(0.5,70)}),
+            ('translate(10)', {'type':'translate', 'location':Point(10,0)}),
             ('translate (-30,1.5e3 )', {'type':'translate', 'location':Point(-30,1.5e3)}),
             ('translate(+1.06e-3,0.9) ', {'type':'translate', 'location':Point(1.06e-3,0.9)}),
             ('matrix(0,1,-1,0,0,0)', {'type':'matrix', 'location':Point(0,0), 'rotate':0, 'scale':1}),
@@ -378,12 +379,14 @@ class TestUtils(unittest.TestCase):
             ('matrix(0.28222222,0,0,0.28222224,-48.3,-8.3146356)', {'type':'matrix', 'location':Point(-48.3,-8.3146356), 'rotate':0, 'scale':0.28222224}),
             ('matrix(-1.1860592,0,0,1.1860592,-88.663335,-57.031569)', {'type':'matrix', 'location':Point(-88.663335,-57.031569), 'rotate':0, 'scale':1.1860592}),
             ('matrix(0.86602540,0.5,-0.5,0.86602540,5,3.5)', {'type':'matrix', 'location':Point(5,3.5), 'rotate':30.0, 'scale':1}), # 30deg ccw - shouldn't this be -30 in pcbmode?
+            ('rotate(90,2,3)', {'type':'rotate','location':Point(2,3),'rotate':90}),
         ]
         for transform, expected_output in test_cases:
             with self.subTest(transform=transform):
                 data = utils.parseTransform(transform)
                 for key,val in expected_output.items():
                     with self.subTest(key=key, val=val):
+                        self.assertIsNotNone(data.get(key), msg='should get {} from transform {}'.format(key, transform))
                         self.assertAlmostEqual(data.get(key), val, msg='should get correct {} from transform {}'.format(key, transform), delta=1e-6)
 
     # parseSvgMatrix tests
