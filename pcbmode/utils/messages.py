@@ -46,12 +46,12 @@ def error(info, error_type=None):
     """
     print('-----------------------------')
     print('Yikes, ERROR!')
-    print('* %s' % info)
+    print('* {}'.format(info))
     print('Solder on!')
     print('-----------------------------')
     if error_type != None:
-        raise error_type
-    raise Exception
+        raise error_type(info)
+    raise Exception(info)
 
 
 

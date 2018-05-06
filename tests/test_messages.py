@@ -73,7 +73,7 @@ class TestMessages(unittest.TestCase):
 
     def test_error_without_type(self):
         with patch('sys.stdout', new=io.StringIO()) as fake_out:
-            with self.assertRaises(Exception, msg='error should raise Exception'):
+            with self.assertRaisesRegex(Exception, r'error details', msg='error should raise Exception'):
                 msg.error('error details')
             self.assertEqual(fake_out.getvalue(),
                     '-----------------------------\n'
@@ -84,12 +84,12 @@ class TestMessages(unittest.TestCase):
 
     def test_error_with_type(self):
         with patch('sys.stdout', new=io.StringIO()) as fake_out:
-            with self.assertRaises(TypeError, msg='error should raise error of specified type'):
-                msg.error('error details', error_type=TypeError)
+            with self.assertRaisesRegex(TypeError, r'custom error details', msg='error should raise error of specified type'):
+                msg.error('custom error details', error_type=TypeError)
             self.assertEqual(fake_out.getvalue(),
                     '-----------------------------\n'
                     'Yikes, ERROR!\n'
-                    '* error details\n'
+                    '* custom error details\n'
                     'Solder on!\n'
                     '-----------------------------\n')
 
