@@ -290,8 +290,31 @@ class TestUtils(unittest.TestCase):
         pass
 
     # getTextParams tests
+    def test_getTextParams_bad_letter_spacing(self):
+        for spacing in '5ft 5cm 5pt junk'.split():
+            with self.assertRaisesRegex(Exception, r"problem parsing the 'letter-spacing' property"):
+                _ = utils.getTextParams('1', spacing, '3')
+
+    def test_getTextParams_bad_line_height(self):
+        for height in '3cm 2.5ft junk'.split():
+            with self.assertRaisesRegex(Exception, r"problem parsing the 'line-height' property"):
+                _ = utils.getTextParams('1', '2', height)
+
+    def test_getTextParams_bad_font_size(self):
+        for size in '3pt 6ft -4'.split():
+            with self.assertRaisesRegex(Exception, r"problem parsing the 'font-size'"):
+                _ = utils.getTextParams(size, '2', '3')
+
     def test_getTextParams(self):
-        pass
+        test_cases = [
+            [['1','2','3'], {'font-size':1.0, 'letter-spacing':2.0, 'line-height':3.0}],
+            [['3.2mm','5 mm', '-7.4mm'], {'font-size':3.2, 'letter-spacing':5.0, 'line-height':-7.4}],
+        ]
+        for params, expected_output in test_cases:
+            font_size, letter_spacing, line_height = utils.getTextParams(*params)
+            self.assertEqual(font_size, expected_output['font-size'])
+            self.assertEqual(letter_spacing, expected_output['letter-spacing'])
+            self.assertEqual(line_height, expected_output['line-height'])
 
     # textToPath tests
     def test_textToPath(self):

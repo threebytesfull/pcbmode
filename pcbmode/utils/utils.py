@@ -408,27 +408,22 @@ def renumberRefdefs(order):
 def getTextParams(font_size, letter_spacing, line_height):
     try:
         letter_spacing, letter_spacing_unit = parseDimension(letter_spacing)
+        assert(letter_spacing_unit in [None, 'mm'])
     except:
-        msg.error("There's a problem with parsing the 'letter-spacing' property with value '%s'. The format should be an integer or float followed by 'mm' (the only unit supported). For example, '0.3mm' or '-2 mm' should work." % letter_spacing)
-
-    if letter_spacing_unit == None:
-        letter_spacing_unit = 'mm'
+        msg.error("There's a problem parsing the 'letter-spacing' property with value '{}'. The format should be an integer or float followed by 'mm' (the only unit supported). For example, '0.3mm' or '-2 mm' should work.".format(letter_spacing))
 
     try:
         line_height, line_height_unit = parseDimension(line_height)
+        assert(line_height_unit in [None, 'mm'])
     except:
-        msg.error("There's a problem parsing the 'line-height' property with value '%s'. The format should be an integer or float followed by 'mm' (the only unit supported). For example, '0.3mm' or '-2 mm' should work." % line_height)
-
-    if line_height_unit == None:
-        line_height_unit = 'mm'
+        msg.error("There's a problem parsing the 'line-height' property with value '{}'. The format should be an integer or float followed by 'mm' (the only unit supported). For example, '0.3mm' or '-2 mm' should work.".format(line_height))
 
     try:
         font_size, font_size_unit = parseDimension(font_size)
+        assert(font_size_unit in [None, 'mm'])
+        assert(font_size > 0)
     except:
-        throw("There's a problem parsing the 'font-size'. It's most likely missing. The format should be an integer or float followed by 'mm' (the only unit supported). For example, '0.3mm' or '2 mm' should work. Of course, it needs to be a positive figure.")
-
-    if font_size_unit == None:
-        font_size_unit = 'mm'
+        msg.error("There's a problem parsing the 'font-size'. It's most likely missing. The format should be an integer or float followed by 'mm' (the only unit supported). For example, '0.3mm' or '2 mm' should work. Of course, it needs to be a positive figure.")
 
     return float(font_size), float(letter_spacing), float(line_height)
 
