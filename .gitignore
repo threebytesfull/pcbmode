@@ -56,3 +56,6 @@ target/
 
 # Tox development environment
 devenv
+
+# pyenv development environment
+.python-version
